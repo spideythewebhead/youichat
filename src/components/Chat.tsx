@@ -102,7 +102,10 @@ export function ChatList({
   );
 
   return (
-    <div className="overflow-y-auto h-full" onScroll={onFetchMoreMessages}>
+    <div
+      className="flex flex-col-reverse overflow-y-auto h-full"
+      onScroll={onFetchMoreMessages}
+    >
       {messages?.map((message) => (
         <Message
           key={message.id}
@@ -181,11 +184,12 @@ export function Message({
         crossAxis="items-start"
         className="hover:bg-primary bg-opacity-75 text-start rounded-md p-1 flex-grow"
       >
-        <Row className="gap-2">
+        <Row className="gap-2" crossAxis="items-start">
           <Avatar
             key={message.sender_id}
-            size="sm"
+            size="md"
             imageUrl={getAvatar(message.sender_id)}
+            className="flex-none"
           />
           <div className="text-base whitespace-pre-wrap leading-5">
             {message.body}
@@ -344,6 +348,7 @@ function EmojisReactions({
             onMouseUp={(e) => {
               onClose(emojiName[index]);
             }}
+            title={emojiName[index]}
           >
             <div className="text-sm text-center pr-1">{emoji}</div>
           </button>

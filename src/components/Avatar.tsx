@@ -4,10 +4,12 @@ export function Avatar({
   imageUrl,
   onClick,
   size = 'md',
+  className,
 }: {
   imageUrl?: string | null;
   onClick?: VoidFunction;
   size?: 'sm' | 'md';
+  className?: string;
 }) {
   let s = 'h-6 w-6';
 
@@ -21,6 +23,7 @@ export function Avatar({
       onClick={onClick}
       className={`rounded-full overflow-hidden inline-block object-cover ${s}
         ${onClick ? 'cursor-pointer' : 'cursor-default'} object-contain
+        ${className}
     `}
     />
   );

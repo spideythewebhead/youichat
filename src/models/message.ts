@@ -60,8 +60,6 @@ export class AppMessage {
   }
 
   private _groupReactions(reactions: DBMessage['reactions']) {
-    console.log(reactions);
-
     this.reactions =
       reactions?.reduce((map, reaction) => {
         map[reaction.reaction].push(reaction);
