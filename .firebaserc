@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "ichat-6710a"
+  },
+  "targets": {
+    "ichat-6710a": {
+      "hosting": {
+        "main": [
+          "you-i-chat"
+        ]
+      }
+    }
+  }
+}
