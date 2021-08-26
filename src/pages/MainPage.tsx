@@ -37,12 +37,16 @@ export function MainPage() {
         }
       }
     }
+
+    if (!urlParams) {
+      setSelectedUser(null);
+    }
   }, [urlParams, users]);
 
   useEffect(() => {
     if (selectedUser?.id) {
       history.push({
-        search: `?chat-remote=${selectedUser.id}`,
+        search: `chat-remote=${selectedUser.id}`,
       });
     }
 

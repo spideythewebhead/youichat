@@ -146,8 +146,6 @@ export function useFetchMessages({
   const updateState = useUpdateState();
 
   const fetcher = useMemo<Fetcher>(() => {
-    console.log(cache, discussionId, uid);
-
     if (cache[discussionId]) {
       cache[discussionId].addListener(updateState);
       return cache[discussionId];

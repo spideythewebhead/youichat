@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { client } from '../db';
 import { useLogState, useProfileNotifier } from '../hooks/useAuth';
 import { useFetchMessages } from '../hooks/useFetchMessages';
@@ -8,11 +8,12 @@ import { Column, Row } from './Flex';
 import { ReplyIcon } from '@heroicons/react/solid';
 import { IconButton } from './IconButton';
 import { Avatar } from './Avatar';
-import { AppMessage, DBReaction } from '../models/message';
-import { TextButton } from './Button';
+import { AppMessage, DBReaction, EmojiType } from '../models/message';
 import { ProfileNotifier } from '../models/profile';
-import { emoji, emojiName } from '../models/emojis';
+import { emojis, emojiName } from '../models/emojis';
 import { EmojiHappyIcon } from '@heroicons/react/outline';
+import ReactDOM from 'react-dom';
+import { useMemo } from 'react';
 
 export function Chat({
   chat,
@@ -171,6 +172,8 @@ export function Message({
   getUserNickname: (uid: string) => string | null;
   getAvatar: (uid: string) => string | null;
 }) {
+  const [emojiParent, setEmojiParent] = useState<HTMLElement | null>(null);
+
   return (
     <Row>
       <Column
@@ -201,55 +204,152 @@ export function Message({
           >
             <span className="text-gray-400">Reactions</span>
 
-            {emojiName
-              .filter((name) => message.hasAnyReaction(name))
-              .map((name, i) => (
-                <span
-                  key={`${name}_${message.id}`}
-                  className={`text-gray-50 text-xs text-start px-2 py-1 rounded-full
-                      ${
-                        message.hasReactionFromUser(profile.uid!)
-                          ? 'border-purple-400 bg-purple-400 bg-opacity-75 '
-                          : ''
-                      }`}
-                >
-                  {message.reactions[name].length} • {emoji[i]}
-                </span>
-              ))}
+            <Row className="gap-1">
+              {emojiName
+                // .filter((name) => message.hasAnyReaction(name))
+                .map((emoji, i) => {
+                  if (!message.hasAnyReaction(emoji)) return;
+
+                  return (
+                    <span
+                      key={`${emoji}_${message.id}`}
+                      className={`text-gray-50 text-xs text-start px-2 py-1 rounded-full
+                        ${
+                          message.hasReactionFromUser(profile.uid!, emoji)
+                            ? 'border-purple-400 bg-secondary bg-opacity-75'
+                            : 'border-purple-400 border'
+                        }`}
+                    >
+                      {message.reactions[emoji].length} • {emojis[i]}
+                    </span>
+                  );
+                })}
+            </Row>
           </Column>
         )}
       </Column>
 
       <IconButton
-        onClick={async () => {
-          const uid = profile.uid;
+        onClick={(e) => {
+          e.stopPropagation();
 
-          if (!uid) return;
-
-          if (message.hasReactionFromUser(profile.uid!)) {
-            await client
-              .from<DBReaction>('reactions')
-              .delete()
-              .eq(
-                'id',
-                message.reactions['smiley'].find(
-                  (r) => r.user_id === profile.uid!
-                )!.id
-              );
+          if (emojiParent) {
+            setEmojiParent(null);
             return;
           }
-
-          await client.from<DBReaction>('reactions').insert({
-            reaction: 'smiley',
-            message_id: message.id,
-            user_id: uid,
-            discussion_id: message.discussion_id,
-          });
+          setEmojiParent(e.currentTarget);
         }}
         className="group"
+        title="react"
       >
         <EmojiHappyIcon className="h-6 w-6 text-gray-400 group-hover:text-gray-100" />
       </IconButton>
+
+      {emojiParent && (
+        <EmojisReactions
+          onClose={async (emoji?: EmojiType) => {
+            setEmojiParent(null);
+
+            if (emoji) {
+              const uid = profile.uid;
+
+              if (!uid) return;
+
+              if (message.hasReactionFromUser(profile.uid!, emoji)) {
+                const reaction = message.reactions[emoji].find(
+                  (r) => r.user_id === profile.uid!
+                );
+
+                if (reaction) {
+                  await client
+                    .from<DBReaction>('reactions')
+                    .delete()
+                    .eq('id', reaction.id);
+                  return;
+                }
+              }
+
+              await client.from<DBReaction>('reactions').insert({
+                reaction: emoji,
+                message_id: message.id,
+                user_id: uid,
+                discussion_id: message.discussion_id,
+              });
+            }
+          }}
+          parent={emojiParent}
+        />
+      )}
     </Row>
+  );
+}
+
+function EmojisReactions({
+  parent,
+  onClose,
+}: {
+  parent: HTMLElement;
+  onClose: (emoji?: EmojiType) => void;
+}) {
+  const rect = parent.getBoundingClientRect();
+  const [size, setSize] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+
+    setSize(node.getBoundingClientRect());
+  }, []);
+
+  const position = useMemo(() => {
+    const _position = {
+      left: 0,
+      top: rect.top + rect.height + 4.0,
+    };
+
+    if (rect.left + size.width >= document.body.clientWidth) {
+      _position.left = document.body.clientWidth - 8 - size.width;
+    } else {
+      _position.left = rect.left - size.width / 2 + rect.width / 2;
+    }
+
+    return _position;
+  }, [size, rect]);
+
+  useEffect(() => {
+    function onFocus() {
+      onClose();
+    }
+
+    document.body.addEventListener('mouseup', onFocus);
+
+    return () => {
+      document.body.removeEventListener('mouseup', onFocus);
+    };
+  }, [onClose]);
+
+  return ReactDOM.createPortal(
+    <div
+      ref={ref}
+      className="absolute p-1 rounded-md bg-secondary filter drop-shadow-md z-20"
+      style={position}
+    >
+      <Row axisSize="min">
+        {emojis.map((emoji, index) => (
+          <button
+            key={emoji}
+            className="hover:bg-black hover:bg-opacity-20 rounded-md p-2"
+            onMouseUp={(e) => {
+              onClose(emojiName[index]);
+            }}
+          >
+            <div className="text-sm text-center pr-1">{emoji}</div>
+          </button>
+        ))}
+      </Row>
+    </div>,
+    document.body
   );
 }

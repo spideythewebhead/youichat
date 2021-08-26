@@ -1,6 +1,6 @@
 import { emojiName } from './emojis';
 
-type EmojiType = typeof emojiName[number];
+export type EmojiType = typeof emojiName[number];
 
 export interface DBReaction {
   id: number;
@@ -19,6 +19,16 @@ export interface DBMessage {
   body: string;
   created_at: string;
   reactions: DBReaction[];
+}
+
+function createEmptyReactions() {
+  const reactions = {} as Reactions;
+
+  for (const emoji of emojiName) {
+    reactions[emoji] = [];
+  }
+
+  return reactions;
 }
 
 export class AppMessage {
@@ -50,21 +60,13 @@ export class AppMessage {
   }
 
   private _groupReactions(reactions: DBMessage['reactions']) {
+    console.log(reactions);
+
     this.reactions =
-      reactions?.reduce(
-        (map, reaction) => {
-          map[reaction.reaction].push(reaction);
-          return map;
-        },
-        {
-          smiley: [],
-          like: [],
-        } as Reactions
-      ) ??
-      ({
-        smiley: [],
-        like: [],
-      } as Reactions);
+      reactions?.reduce((map, reaction) => {
+        map[reaction.reaction].push(reaction);
+        return map;
+      }, createEmptyReactions()) ?? createEmptyReactions();
   }
 
   addReaction(reaction: DBReaction) {
@@ -97,13 +99,15 @@ export class AppMessage {
     );
   }
 
-  hasReactionFromUser(uid: string) {
-    for (const name of Object.keys(this.reactions) as EmojiType[]) {
-      if (this.reactions[name].find((r) => r.user_id === uid)) {
-        return true;
-      }
-    }
+  hasReactionFromUser(uid: string, reaction: EmojiType) {
+    // for (const name of Object.keys(this.reactions) as EmojiType[]) {
+    // if (this.reactions[name].find((r) => r.user_id === uid)) {
+    //   return true;
+    // }
+    // }
 
-    return false;
+    // return false;
+
+    return !!this.reactions[reaction].find((r) => r.user_id === uid);
   }
 }

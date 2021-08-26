@@ -11,6 +11,7 @@ module.exports = {
         'primary': '#3b3b3b',
         'card': '#404040',
         'button': '#07c700',
+        'secondary': colors.purple[700]
       },
       minWidth: {
         'card': '350px',
