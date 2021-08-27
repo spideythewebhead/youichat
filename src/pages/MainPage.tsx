@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Chat } from '../components/Chat';
+import { Chat } from '../components/chat/Chat';
 import { Column, Row } from '../components/Flex';
 import {
   UsersListDesktop,
   UsersListMobile,
 } from '../components/users/UsersList';
-import { useLogState } from '../hooks/useAuth';
+import { useProfileNotifier } from '../hooks/useAuth';
 import { useFetchChat } from '../hooks/useFetchChat';
 import { useFetchUsers } from '../hooks/useFetchUsers';
 import { AppUser } from '../models/user';
@@ -15,13 +15,13 @@ import MediaQuery from 'react-responsive';
 export function MainPage() {
   const history = useHistory();
   const { search: urlParams } = useLocation();
-  const logState = useLogState();
+  const profile = useProfileNotifier();
 
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
-  const { users } = useFetchUsers(logState.session?.user?.id);
+  const { users } = useFetchUsers(profile.uid!);
 
   const { chat, loading: fetchingChat } = useFetchChat({
-    uid: logState.session!.user!.id,
+    uid: profile.uid!,
     remoteUid: selectedUser?.id,
   });
 

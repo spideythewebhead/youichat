@@ -145,6 +145,8 @@ export function useFetchMessages({
 }) {
   const updateState = useUpdateState();
 
+  // this hook crashes on dev mode
+  // because its called twice and adds the same listener twice
   const fetcher = useMemo<Fetcher>(() => {
     if (cache[discussionId]) {
       cache[discussionId].addListener(updateState);
@@ -154,10 +156,12 @@ export function useFetchMessages({
     const fetcher = new Fetcher(uid, discussionId, 25);
     fetcher.addListener(updateState);
 
-    return (cache[discussionId] = fetcher);
+    cache[discussionId] = fetcher;
+
+    return fetcher;
   }, [uid, discussionId, updateState]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     return () => {
       fetcher.removeListener(updateState);
     };

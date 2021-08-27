@@ -7,21 +7,18 @@ import { Switch, Route, useHistory, Redirect } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { IconButton } from './components/IconButton';
-import { LogoutIcon } from '@heroicons/react/outline';
+import { LogoutIcon } from '@heroicons/react/solid';
 import { client } from './db';
 import { MainPage } from './pages/MainPage';
 import { SetNicknamePage } from './pages/SetNicknamePage';
-import { MissingPublicData, PublicData } from './models/profile';
+import { MissingPublicData } from './models/profile';
 import { useFilePicker } from './hooks/useFilePicker';
 import { Avatar } from './components/Avatar';
-import { AppUser } from './models/user';
-import { useModal } from './hooks/useModal';
 
 function App() {
   const history = useHistory();
   const logState = useLogState();
   const profile = useProfileNotifier();
-  const showModal = useModal();
 
   const filePicker = useFilePicker();
 

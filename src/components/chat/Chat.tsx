@@ -1,16 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { client } from '../db';
-import { useLogState, useProfileNotifier } from '../hooks/useAuth';
-import { useFetchMessages } from '../hooks/useFetchMessages';
-import { AppChat } from '../models/chat';
-import { AppUser } from '../models/user';
-import { Column, Row } from './Flex';
-import { ReplyIcon } from '@heroicons/react/solid';
-import { IconButton } from './IconButton';
-import { Avatar } from './Avatar';
-import { AppMessage, DBReaction, EmojiType } from '../models/message';
-import { ProfileNotifier } from '../models/profile';
-import { emojis, emojiName } from '../models/emojis';
+import React, { useCallback, useEffect, useState } from 'react';
+import { client } from '../../db';
+import { useLogState, useProfileNotifier } from '../../hooks/useAuth';
+import { useFetchMessages } from '../../hooks/useFetchMessages';
+import { AppChat } from '../../models/chat';
+import { AppUser } from '../../models/user';
+import { Column, Row } from '../Flex';
+import { ReplyIcon, MicrophoneIcon } from '@heroicons/react/solid';
+import { IconButton } from '../IconButton';
+import { Avatar } from '../Avatar';
+import { AppMessage, DBReaction, EmojiType } from '../../models/message';
+import { ProfileNotifier } from '../../models/profile';
+import { emojis, emojiName } from '../../models/emojis';
 import { EmojiHappyIcon } from '@heroicons/react/outline';
 import ReactDOM from 'react-dom';
 import { useMemo } from 'react';
@@ -22,9 +22,9 @@ export function Chat({
   chat: AppChat;
   remoteUser: AppUser;
 }) {
-  const logState = useLogState();
+  const profile = useProfileNotifier();
 
-  const uid = logState.session!.user!.id;
+  const uid = profile.uid!;
 
   const onSendMessage = useCallback(
     async (message: string) => {
@@ -149,6 +149,16 @@ export function MessageCreator({
           }
         }}
       ></textarea>
+
+      <IconButton
+        onClick={() => {
+          onSendMessage(message);
+          clearMessage();
+        }}
+        title="reply"
+      >
+        <MicrophoneIcon className="h-6 w-6 p-1" />
+      </IconButton>
 
       <IconButton
         disabled={!message}
