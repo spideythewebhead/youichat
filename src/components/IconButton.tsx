@@ -11,13 +11,11 @@ export function IconButton(
       {...props}
       className={`
     rounded-full
-    hover:brightness-105
-    hover:shadow-md
     p-1
     ${
       props.disabled
         ? 'opacity-50 cursor-default'
-        : 'hover:bg-button cursor-pointer'
+        : 'hover:bg-button cursor-pointer hover:brightness-105 hover:shadow-md'
     }
     ${props.className}
     `}
