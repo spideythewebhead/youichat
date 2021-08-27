@@ -74,8 +74,8 @@ export function ChatList({
     (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
       if (
         event.currentTarget.scrollHeight -
-          (event.currentTarget.scrollTop + event.currentTarget.offsetHeight) <
-        200
+          (-event.currentTarget.scrollTop + event.currentTarget.offsetHeight) <
+        300
       ) {
         onLoadMore();
       }
