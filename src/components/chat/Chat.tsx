@@ -164,7 +164,7 @@ export function Message({
   switch (message.body.type) {
     case 'text':
       messageWidget = (
-        <div className="text-base whitespace-pre-wrap leading-5">
+        <div className=" text-base overflow-hidden break-all max-w-xs md:max-w-full whitespace-pre-line leading-5">
           {message.body.value}
         </div>
       );

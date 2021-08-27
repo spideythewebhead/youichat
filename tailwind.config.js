@@ -18,6 +18,9 @@ module.exports = {
         'users-list': '250px',
         'user-mobile': '56px'
       },
+      maxWidth: {
+        'screen': '100vw',
+      },
       minHeight: {
         'appbar': '48px',
       },
