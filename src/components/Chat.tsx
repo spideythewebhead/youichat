@@ -208,7 +208,7 @@ export function Message({
           >
             <span className="text-gray-400">Reactions</span>
 
-            <Row className="gap-1">
+            <Row className="gap-1" wrap="flex-wrap">
               {emojiName
                 // .filter((name) => message.hasAnyReaction(name))
                 .map((emoji, i) => {

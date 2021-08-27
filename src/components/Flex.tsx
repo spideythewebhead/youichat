@@ -10,12 +10,14 @@ interface Flex {
   crossAxis?: 'items-start' | 'items-end' | 'items-center' | 'items-stretch';
   axisSize?: 'max' | 'min';
   gap?: string;
+  wrap?: 'flex-wrap' | 'flex-wrap-reverse' | 'flex-nowrap';
 }
 
 export function Row({
   mainAxis = 'justify-start',
   crossAxis = 'items-center',
   axisSize = 'max',
+  wrap = 'flex-nowrap',
   children,
   ...props
 }: Flex &
@@ -26,7 +28,7 @@ export function Row({
   return (
     <div
       {...props}
-      className={`flex flex-row ${mainAxis} ${crossAxis}
+      className={`flex flex-row ${mainAxis} ${crossAxis} ${wrap}
     ${axisSize === 'max' ? 'w-full' : 'w-auto'}
     ${props.className ?? ''}
     `}
@@ -40,6 +42,7 @@ export function Column({
   mainAxis = 'justify-start',
   crossAxis = 'items-center',
   axisSize = 'max',
+  wrap = 'flex-nowrap',
   children,
   ...props
 }: Flex &
@@ -50,7 +53,7 @@ export function Column({
   return (
     <div
       {...props}
-      className={`flex flex-col ${mainAxis} ${crossAxis}
+      className={`flex flex-col ${mainAxis} ${crossAxis} ${wrap}
     ${axisSize === 'max' ? 'h-full' : 'h-auto'}
     ${props.className ?? ''}
     `}
