@@ -16,7 +16,15 @@ export interface DBMessage {
   id: number;
   discussion_id: number;
   sender_id: string;
-  body: string;
+  body:
+    | {
+        type: 'text';
+        value: string;
+      }
+    | {
+        type: 'audio';
+        value: string | Blob;
+      };
   created_at: string;
   reactions: DBReaction[];
 }
@@ -35,7 +43,7 @@ export class AppMessage {
   readonly id: number;
   readonly discussion_id: number;
   readonly sender_id: string;
-  readonly body: string;
+  readonly body: DBMessage['body'];
   readonly created_at: string;
 
   public readonly createdAt: Date;

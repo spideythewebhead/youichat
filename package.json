@@ -25,6 +25,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@tailwindcss/jit": "^0.1.18",
+    "@types/dom-mediacapture-record": "^1.0.10",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.8",

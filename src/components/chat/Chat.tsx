@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { client } from '../../db';
-import { useLogState, useProfileNotifier } from '../../hooks/useAuth';
+import { useProfileNotifier } from '../../hooks/useAuth';
 import { useFetchMessages } from '../../hooks/useFetchMessages';
 import { AppChat } from '../../models/chat';
 import { AppUser } from '../../models/user';
 import { Column, Row } from '../Flex';
-import { ReplyIcon, MicrophoneIcon } from '@heroicons/react/solid';
 import { IconButton } from '../IconButton';
 import { Avatar } from '../Avatar';
 import { AppMessage, DBReaction, EmojiType } from '../../models/message';
@@ -14,6 +13,8 @@ import { emojis, emojiName } from '../../models/emojis';
 import { EmojiHappyIcon } from '@heroicons/react/outline';
 import ReactDOM from 'react-dom';
 import { useMemo } from 'react';
+import { MessageCreator } from './MessageCreator';
+import { usePromise } from '../../hooks/usePromise';
 
 export function Chat({
   chat,
@@ -27,15 +28,41 @@ export function Chat({
   const uid = profile.uid!;
 
   const onSendMessage = useCallback(
-    async (message: string) => {
-      const body = message.trim();
+    async (body: AppMessage['body']) => {
+      const data = { ...body };
 
-      if (!body) return;
+      if (data.type === 'text') {
+        data.value = data.value.trim();
+
+        if (!data.value) {
+          return;
+        }
+      }
+
+      if (data.type === 'audio') {
+        if (data.value instanceof Blob) {
+          const { data: response, error } = await client.storage
+            .from('chats')
+            .upload(`${chat.id}/${Date.now()}.mp3`, data.value, {
+              upsert: true,
+            });
+
+          console.log(response, error);
+
+          if (error) {
+            return;
+          }
+
+          if (response) {
+            data.value = response.Key;
+          }
+        }
+      }
 
       await client.from<AppMessage>('messages').insert({
         discussion_id: chat.id,
         sender_id: uid,
-        body,
+        body: data,
       });
     },
     [chat.id, uid]
@@ -119,61 +146,6 @@ export function ChatList({
   );
 }
 
-export function MessageCreator({
-  onSendMessage,
-}: {
-  onSendMessage: (message: string) => Promise<void>;
-}) {
-  const [message, setMessage] = useState<string>('');
-
-  const clearMessage = useCallback(() => setMessage(''), []);
-
-  return (
-    <Row className="space-x-2 shadow-md rounded-md bg-primary px-2 flex-shrink-0 mt-2">
-      <textarea
-        placeholder="Your message.."
-        className="flex-grow resize-none bg-transparent outline-none"
-        value={message}
-        onChange={(e) => setMessage(e.currentTarget.value)}
-        onKeyDown={(e) => {
-          if (!message) return;
-
-          if (e.key === 'Escape') {
-            clearMessage();
-          }
-
-          if (!e.shiftKey && e.key === 'Enter') {
-            e.preventDefault();
-            onSendMessage(message);
-            clearMessage();
-          }
-        }}
-      ></textarea>
-
-      <IconButton
-        onClick={() => {
-          onSendMessage(message);
-          clearMessage();
-        }}
-        title="reply"
-      >
-        <MicrophoneIcon className="h-6 w-6 p-1" />
-      </IconButton>
-
-      <IconButton
-        disabled={!message}
-        onClick={() => {
-          onSendMessage(message);
-          clearMessage();
-        }}
-        title="reply"
-      >
-        <ReplyIcon className="h-6 w-6 p-1" />
-      </IconButton>
-    </Row>
-  );
-}
-
 export function Message({
   message,
   profile,
@@ -186,6 +158,21 @@ export function Message({
   getAvatar: (uid: string) => string | null;
 }) {
   const [emojiParent, setEmojiParent] = useState<HTMLElement | null>(null);
+
+  let messageWidget: React.ReactElement | undefined;
+
+  switch (message.body.type) {
+    case 'text':
+      messageWidget = (
+        <div className="text-base whitespace-pre-wrap leading-5">
+          {message.body.value}
+        </div>
+      );
+      break;
+    case 'audio':
+      messageWidget = <AudioMessage path={message.body.value as string} />;
+      break;
+  }
 
   return (
     <Row>
@@ -201,9 +188,7 @@ export function Message({
             imageUrl={getAvatar(message.sender_id)}
             className="flex-none"
           />
-          <div className="text-base whitespace-pre-wrap leading-5">
-            {message.body}
-          </div>
+          {messageWidget}
         </Row>
         <span className="text-xs text-gray-400">
           {message.createdAt.toLocaleString()} •{' '}
@@ -367,4 +352,56 @@ function EmojisReactions({
     </div>,
     document.body
   );
+}
+
+class AudioMessage extends React.Component<
+  {
+    path: string;
+  },
+  {
+    audioUrl?: string | null;
+  }
+> {
+  _promiseId = 0;
+
+  constructor(props: AudioMessage['props']) {
+    super(props);
+
+    this.state = {
+      audioUrl: null,
+    };
+  }
+
+  componentDidUpdate(prevDeps: AudioMessage['props']) {
+    if (prevDeps.path !== this.props.path) {
+      this.getFile();
+    }
+  }
+
+  componentDidMount() {
+    this.getFile();
+  }
+
+  getFile() {
+    const id = ++this._promiseId;
+
+    setTimeout(() => {
+      const pub = client.storage
+        .from('chats')
+        .getPublicUrl(this.props.path.replace('chats/', ''));
+
+      if (pub.data?.publicURL) {
+        this.setState({
+          audioUrl: pub.data.publicURL,
+        });
+      }
+    }, 10);
+  }
+
+  render() {
+    if (!this.state.audioUrl) return <div>Downloading..</div>;
+
+    // return <div>elleg</div>;
+    return <audio src={this.state.audioUrl} controls></audio>;
+  }
 }

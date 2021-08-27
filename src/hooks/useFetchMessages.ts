@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { client } from '../db';
 import { AppMessage, DBMessage, DBReaction } from '../models/message';
 import { ValueNotifier } from '../utils/value_notifier';
-import { useUpdateState } from './updateState';
+import { useUpdateState } from './useUpdateState';
 
 class NotificationPlayer {
   private _player: HTMLAudioElement;

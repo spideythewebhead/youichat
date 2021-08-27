@@ -7,14 +7,8 @@ import React, {
   useMemo,
 } from 'react';
 import { client } from '../db';
-import {
-  MissingPublicData,
-  ProfileNotifier,
-  PublicData,
-} from '../models/profile';
-import { AppUser } from '../models/user';
-import { useUpdateState } from './updateState';
-import { useMounted } from './useMounted';
+import { ProfileNotifier } from '../models/profile';
+import { useUpdateState } from './useUpdateState';
 
 export interface LogState {
   state: AuthChangeEvent;
