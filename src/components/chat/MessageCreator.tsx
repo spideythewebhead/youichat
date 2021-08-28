@@ -1,7 +1,11 @@
-import { MicrophoneIcon, ReplyIcon } from '@heroicons/react/solid';
+import {
+  MicrophoneIcon,
+  ReplyIcon,
+  PhotographIcon,
+} from '@heroicons/react/solid';
 import React, { useCallback, useState } from 'react';
+import { useFilePicker } from '../../hooks/useFilePicker';
 import { Modal } from '../../hooks/useModal';
-import { useMicrophonePermission } from '../../hooks/useRecordAudio';
 import { AppMessage } from '../../models/message';
 import { ElevatedButton, TextButton } from '../Button';
 import { Card, CardTitle } from '../Card';
@@ -45,6 +49,8 @@ export function MessageCreator({
         ></textarea>
 
         <AudioRecord onSendMessage={onSendMessage} />
+
+        <ImagePicker onSendMessage={onSendMessage} />
 
         <IconButton
           disabled={!message}
@@ -172,4 +178,30 @@ class AudioRecord extends React.Component<
       </>
     );
   }
+}
+
+function ImagePicker({
+  onSendMessage,
+}: {
+  onSendMessage: (body: AppMessage['body']) => void;
+}) {
+  const filePicker = useFilePicker();
+
+  return (
+    <IconButton
+      onClick={async () => {
+        const file = await filePicker(/\.(png|jpe?g|webp)$/);
+
+        if (file) {
+          onSendMessage({
+            type: 'image',
+            value: file,
+          });
+        }
+      }}
+      title="pick image"
+    >
+      <PhotographIcon className="h-6 w-6 p-1" />
+    </IconButton>
+  );
 }

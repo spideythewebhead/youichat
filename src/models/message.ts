@@ -24,6 +24,10 @@ export interface DBMessage {
     | {
         type: 'audio';
         value: string | Blob;
+      }
+    | {
+        type: 'image';
+        value: string | File;
       };
   created_at: string;
   reactions: DBReaction[];

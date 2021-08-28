@@ -5,11 +5,8 @@ interface UsePromiseState<T> {
   error?: any;
 }
 
-export function usePromise<T>(
-  promise: Promise<T> | null,
-  deps: DependencyList
-) {
-  const [state, setState] = useState<UsePromiseState<T>>();
+export function usePromise<T>(promise: Promise<T> | null) {
+  const [state, setState] = useState<UsePromiseState<T>>({});
 
   useEffect(() => {
     if (!promise) {
@@ -31,7 +28,7 @@ export function usePromise<T>(
     return () => {
       mounted = false;
     };
-  }, [promise, ...deps]);
+  }, [promise]);
 
   return state;
 }

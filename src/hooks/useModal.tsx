@@ -72,7 +72,8 @@ export class Modal extends React.Component<
         className={`absolute h-full w-full inset-0 z-50 ${this.state.transition}`}
         onClick={() => {
           if (this.props.dismissableOnClick) {
-            ReactDOM.unmountComponentAtNode(this.ref.current!.parentElement!);
+            this.props.onClick?.();
+            // ReactDOM.unmountComponentAtNode(this.ref.current!.parentElement!);
           }
         }}
       >

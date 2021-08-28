@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 export function useFilePicker() {
-  const pickFile = useCallback(() => {
+  const pickFile = useCallback((extensions: RegExp) => {
     return new Promise<File | null>((res, rej) => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -9,7 +9,7 @@ export function useFilePicker() {
       input.className = 'hidden';
 
       input.addEventListener('change', (e) => {
-        if (/\.(png|jpe?g)$/.test(input.files![0].name)) {
+        if (extensions.test(input.files![0].name)) {
           res(input.files![0]);
         }
       });

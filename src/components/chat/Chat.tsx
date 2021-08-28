@@ -15,6 +15,7 @@ import ReactDOM from 'react-dom';
 import { useMemo } from 'react';
 import { MessageCreator } from './MessageCreator';
 import { usePromise } from '../../hooks/usePromise';
+import { Modal } from '../../hooks/useModal';
 
 export function Chat({
   chat,
@@ -44,6 +45,32 @@ export function Chat({
           const { data: response, error } = await client.storage
             .from('chats')
             .upload(`${chat.id}/${Date.now()}.mp3`, data.value, {
+              upsert: true,
+            });
+
+          console.log(response, error);
+
+          if (error) {
+            return;
+          }
+
+          if (response) {
+            data.value = response.Key.replace('chats/', '');
+          }
+        }
+      }
+
+      if (data.type === 'image') {
+        if (data.value instanceof File) {
+          if (data.value.size / 1024 / 1024 >= 5) {
+            return;
+          }
+
+          const [, ext] = data.value.name.split('.');
+
+          const { data: response, error } = await client.storage
+            .from('chats')
+            .upload(`${chat.id}/${Date.now()}.${ext}`, data.value, {
               upsert: true,
             });
 
@@ -171,6 +198,9 @@ export function Message({
       break;
     case 'audio':
       messageWidget = <AudioMessage path={message.body.value as string} />;
+      break;
+    case 'image':
+      messageWidget = <ImageMessage path={message.body.value as string} />;
       break;
   }
 
@@ -354,54 +384,50 @@ function EmojisReactions({
   );
 }
 
-class AudioMessage extends React.Component<
-  {
-    path: string;
-  },
-  {
-    audioUrl?: string | null;
-  }
-> {
-  _promiseId = 0;
+function AudioMessage({ path }: { path: string }) {
+  const downloadPromise = useMemo(() => {
+    return client.storage.from('chats').createSignedUrl(path, 3600);
+  }, [path]);
 
-  constructor(props: AudioMessage['props']) {
-    super(props);
+  const { data } = usePromise(downloadPromise);
 
-    this.state = {
-      audioUrl: null,
-    };
-  }
+  if (data?.error) return <div>Failed..</div>;
+  if (!data?.signedURL) return <div>Downloading..</div>;
 
-  componentDidUpdate(prevDeps: AudioMessage['props']) {
-    if (prevDeps.path !== this.props.path) {
-      this.getFile();
-    }
-  }
+  return <audio src={data.signedURL} controls></audio>;
+}
 
-  componentDidMount() {
-    this.getFile();
-  }
+function ImageMessage({ path }: { path: string }) {
+  const [openInModal, setOpenInModal] = useState(false);
 
-  async getFile() {
-    const id = ++this._promiseId;
+  const downloadPromise = useMemo(() => {
+    return client.storage.from('chats').createSignedUrl(path, 3600);
+  }, [path]);
 
-    const { signedURL } = await client.storage
-      .from('chats')
-      .createSignedUrl(this.props.path, 3600);
+  const { data } = usePromise(downloadPromise);
 
-    if (id !== this._promiseId) return;
+  if (data?.error) return <div>Failed..</div>;
+  if (!data?.signedURL) return <div>Downloading..</div>;
 
-    if (signedURL) {
-      this.setState({
-        audioUrl: signedURL,
-      });
-    }
-  }
-
-  render() {
-    if (!this.state.audioUrl) return <div>Downloading..</div>;
-
-    // return <div>elleg</div>;
-    return <audio src={this.state.audioUrl} controls></audio>;
-  }
+  return (
+    <>
+      <img
+        key={data.signedURL}
+        className="max-h-80 "
+        src={data.signedURL}
+        onClick={() => setOpenInModal(true)}
+      />
+      <Modal dismissableOnClick={true} onClick={() => setOpenInModal(false)}>
+        {openInModal && (
+          <Column mainAxis="justify-center" className="py-8">
+            <img
+              key={data.signedURL}
+              className="h-full px-8 max-h-screen md:max-h-full"
+              src={data.signedURL}
+            />
+          </Column>
+        )}
+      </Modal>
+    </>
+  );
 }

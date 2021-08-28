@@ -46,7 +46,7 @@ function App() {
 
                   if (!id) return;
 
-                  const file = await filePicker();
+                  const file = await filePicker(/\.(png|jpe?g)$/);
 
                   if (file) {
                     profile.uploadProfilePicture(file);
