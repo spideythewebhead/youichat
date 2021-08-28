@@ -77,54 +77,53 @@ class AudioRecord extends React.Component<
   },
   {
     mediaRecorder: MediaRecorder | null;
-    onSendRecord: ((body: AppMessage['body']) => void) | null;
   }
 > {
+  private _sendRecordRef: null | ((body: AppMessage['body']) => void) = null;
+
   constructor(props: AudioRecord['props']) {
     super(props);
 
     this.state = {
       mediaRecorder: null,
-      onSendRecord: null,
     };
   }
 
-  onCreateMediaRecorder() {
-    navigator.getUserMedia(
-      {
-        audio: true,
-        video: false,
-      },
-      (stream) => {
-        const recorder = new MediaRecorder(stream);
+  componentWillUnmount() {
+    this._sendRecordRef = null;
+    this.state.mediaRecorder?.stop();
+  }
 
-        recorder.start();
+  async onCreateMediaRecorder() {
+    const stream = await (navigator.mediaDevices ?? navigator).getUserMedia({
+      audio: true,
+      video: false,
+    });
 
-        this.setState({
-          mediaRecorder: recorder,
-        });
+    const recorder = new MediaRecorder(stream);
 
-        const chunks: Blob[] = [];
+    recorder.start();
 
-        recorder.addEventListener('dataavailable', (e) => {
-          chunks.push(e.data);
-        });
+    this.setState({
+      mediaRecorder: recorder,
+    });
 
-        recorder.addEventListener('stop', (e) => {
-          recorder.stream.getTracks().forEach((t) => t.stop());
+    const chunks: Blob[] = [];
 
-          const blob = new Blob(chunks, {});
+    recorder.addEventListener('dataavailable', (e) => {
+      chunks.push(e.data);
+    });
 
-          if (this.state.onSendRecord) {
-            this.state.onSendRecord({
-              type: 'audio',
-              value: blob,
-            });
-          }
-        });
-      },
-      (error) => {}
-    );
+    recorder.addEventListener('stop', (e) => {
+      recorder.stream.getTracks().forEach((t) => t.stop());
+
+      const blob = new Blob(chunks, {});
+
+      this._sendRecordRef?.({
+        type: 'audio',
+        value: blob,
+      });
+    });
   }
 
   render() {
@@ -150,10 +149,10 @@ class AudioRecord extends React.Component<
                 <Row className="gap-1" mainAxis="justify-center">
                   <TextButton
                     onClick={() => {
+                      this._sendRecordRef = null;
                       this.state.mediaRecorder?.stop();
                       this.setState({
                         mediaRecorder: null,
-                        onSendRecord: null,
                       });
                     }}
                   >
@@ -161,9 +160,11 @@ class AudioRecord extends React.Component<
                   </TextButton>
                   <ElevatedButton
                     onClick={() => {
+                      this._sendRecordRef = (body) =>
+                        this.props.onSendMessage(body);
+
                       this.setState({
                         mediaRecorder: null,
-                        onSendRecord: (body) => this.props.onSendMessage(body),
                       });
 
                       this.state.mediaRecorder?.stop();

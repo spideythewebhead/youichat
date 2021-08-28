@@ -6,6 +6,7 @@ export const emojiName = [
   'tears_of_joy',
   'angry_face',
   'ok',
+  'ok_button',
 ] as const;
 
-export const emojis = ['❤️', '🙂', '👍', '👎', '😂', '😠', '👌'] as const;
+export const emojis = ['❤️', '🙂', '👍', '👎', '😂', '😠', '👌', '🆗'] as const;

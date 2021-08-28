@@ -54,8 +54,6 @@ export function Chat({
               upsert: true,
             });
 
-          console.log(response, error);
-
           if (error) {
             return;
           }
@@ -79,8 +77,6 @@ export function Chat({
             .upload(`${chat.id}/${Date.now()}.${ext}`, data.value, {
               upsert: true,
             });
-
-          console.log(response, error);
 
           if (error) {
             return;
@@ -133,8 +129,6 @@ export function ChatList({
 
   const messagesLength = messages?.length ?? 0;
   useLayoutEffect(() => {
-    console.log(listRef.current?.scrollTop);
-
     if (listRef.current && listRef.current.scrollTop >= -150) {
       listRef.current.scrollTo({ top: 0 });
     }
@@ -422,18 +416,24 @@ function ImageMessage({ path }: { path: string }) {
 
   return (
     <>
-      <img
-        key={data.signedURL}
-        className="max-h-80 overflow-hidden rounded-md"
-        src={data.signedURL}
-        onClick={() => setOpenInModal(true)}
-      />
+      <Column
+        mainAxis="justify-center"
+        crossAxis="items-stretch"
+        className="min-w-12"
+      >
+        <img
+          key={data.signedURL}
+          className="max-h-80 w-full overflow-hidden rounded-md cursor-pointer"
+          src={data.signedURL}
+          onClick={() => setOpenInModal(true)}
+        />
+      </Column>
       <Modal dismissableOnClick={true} onClick={() => setOpenInModal(false)}>
         {openInModal && (
           <Column mainAxis="justify-center" className="py-8 px-8">
             <img
               key={data.signedURL}
-              className="h-full  max-h-96 oveflow-hidden rounded-md  md:max-h-full"
+              className="h-full max-h-96 oveflow-hidden rounded-md md:max-h-full"
               src={data.signedURL}
             />
           </Column>

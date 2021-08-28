@@ -16,7 +16,9 @@ module.exports = {
       minWidth: {
         'card': '350px',
         'users-list': '250px',
-        'user-mobile': '56px'
+        'user-mobile': '56px',
+        '12': '3rem',
+
       },
       maxWidth: {
         'screen': '100vw',

@@ -41,35 +41,49 @@ export class Modal extends React.Component<
     dismissableOnClick?: boolean;
     onClick?: VoidFunction;
   },
-  { transition?: string; renderChildren?: boolean }
+  { transition?: string }
 > {
   private ref = React.createRef<HTMLDivElement>();
 
   constructor(props: Modal['props']) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      transition: 'bg-opacity-0',
+    };
+  }
+
+  private animIn() {
+    setTimeout(() => {
+      this.setState({
+        transition: `bg-opacity-30`,
+      });
+    }, 5);
+  }
+
+  componentDidMount() {
+    if (this.props.children) {
+      this.animIn();
+    }
   }
 
   componentDidUpdate(prevProps: Modal['props']) {
     if (prevProps.children !== this.props.children && this.props.children) {
-      setTimeout(() => {
-        this.setState({
-          transition: `bg-opacity-30 bg-black 
-        transition duration-1000 pointer-events-auto ease-in-out`,
-          renderChildren: true,
-        });
-      }, 50);
+      this.animIn();
+    } else if (!this.props.children && prevProps.children) {
+      this.setState({
+        transition: 'bg-opacity-0',
+      });
     }
   }
 
   render() {
-    if (!this.props.children) return <></>;
+    if (!this.props.children) return;
 
     return ReactDOM.createPortal(
       <div
         ref={this.ref}
-        className={`absolute h-full w-full inset-0 z-50 ${this.state.transition}`}
+        className={`absolute bg-black h-full w-full inset-0 z-50 pointer-events-auto transition delay-100 duration-500 ${this.state.transition}`}
         onClick={() => {
           if (this.props.dismissableOnClick) {
             this.props.onClick?.();
@@ -77,7 +91,7 @@ export class Modal extends React.Component<
           }
         }}
       >
-        {this.state.renderChildren ? this.props.children : null}
+        {this.props.children}
       </div>,
       document.body
     );
