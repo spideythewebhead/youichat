@@ -27,6 +27,7 @@ export function MessageCreator({
         <textarea
           placeholder="Your message.."
           className="flex-grow resize-none bg-transparent outline-none"
+          maxLength={200}
           value={message}
           onChange={(e) => setMessage(e.currentTarget.value)}
           onKeyDown={(e) => {

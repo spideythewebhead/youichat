@@ -33,7 +33,7 @@ export function Chat({
       const data = { ...body };
 
       if (data.type === 'text') {
-        data.value = data.value.trim();
+        data.value = data.value.trim().substr(0, 200);
 
         if (!data.value) {
           return;
