@@ -191,7 +191,7 @@ function ImagePicker({
   return (
     <IconButton
       onClick={async () => {
-        const file = await filePicker(/\.(png|jpe?g|webp)$/);
+        const file = await filePicker(/\.(png|jpe?g|webp|gif)$/);
 
         if (file) {
           onSendMessage({

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { client } from '../../db';
 import { useProfileNotifier } from '../../hooks/useAuth';
 import { useFetchMessages } from '../../hooks/useFetchMessages';
@@ -113,6 +119,7 @@ export function ChatList({
   chat: AppChat;
   remoteUser: AppUser;
 }) {
+  const listRef = useRef<HTMLDivElement | null>(null);
   const profile = useProfileNotifier();
 
   const {
@@ -123,6 +130,15 @@ export function ChatList({
     uid: profile.uid!,
     discussionId: chat.id,
   });
+
+  const messagesLength = messages?.length ?? 0;
+  useLayoutEffect(() => {
+    console.log(listRef.current?.scrollTop);
+
+    if (listRef.current && listRef.current.scrollTop >= -150) {
+      listRef.current.scrollTo({ top: 0 });
+    }
+  }, [messagesLength]);
 
   const onFetchMoreMessages = useCallback(
     (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
@@ -157,6 +173,7 @@ export function ChatList({
 
   return (
     <div
+      ref={listRef}
       className="flex flex-col-reverse overflow-y-auto h-full"
       onScroll={onFetchMoreMessages}
     >
@@ -226,13 +243,7 @@ export function Message({
         </span>
 
         {message.anyReactions() && (
-          <Column
-            crossAxis="items-start"
-            axisSize="min"
-            className="my-2 mb-1 text-xs"
-          >
-            <span className="text-gray-400">Reactions</span>
-
+          <div className="my-2 mb-1 text-xs">
             <Row className="gap-1" wrap="flex-wrap">
               {emojiName
                 // .filter((name) => message.hasAnyReaction(name))
@@ -254,7 +265,7 @@ export function Message({
                   );
                 })}
             </Row>
-          </Column>
+          </div>
         )}
       </Column>
 
@@ -413,16 +424,16 @@ function ImageMessage({ path }: { path: string }) {
     <>
       <img
         key={data.signedURL}
-        className="max-h-80 "
+        className="max-h-80 overflow-hidden rounded-md"
         src={data.signedURL}
         onClick={() => setOpenInModal(true)}
       />
       <Modal dismissableOnClick={true} onClick={() => setOpenInModal(false)}>
         {openInModal && (
-          <Column mainAxis="justify-center" className="py-8">
+          <Column mainAxis="justify-center" className="py-8 px-8">
             <img
               key={data.signedURL}
-              className="h-full px-8 max-h-screen md:max-h-full"
+              className="h-full  max-h-96 oveflow-hidden rounded-md  md:max-h-full"
               src={data.signedURL}
             />
           </Column>
