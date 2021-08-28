@@ -11,11 +11,11 @@ export function ElevatedButton({
     <button
       {...props}
       className={`
-      px-4 py-1 m-0 bg-button
+      px-4 py-1 m-0 
       rounded-md
       font-bold
       ${!props.disabled ? 'cursor-pointer' : 'cursor-none'}
-      ${props.disabled ? 'opacity-75' : ''}
+      ${props.disabled ? 'bg-primary' : 'bg-button'}
     `}
     >
       {children}

@@ -39,7 +39,6 @@ import ReactDOM from 'react-dom';
 export class Modal extends React.Component<
   {
     dismissableOnClick?: boolean;
-    open?: boolean;
     onClick?: VoidFunction;
   },
   { transition?: string; renderChildren?: boolean }
@@ -53,7 +52,7 @@ export class Modal extends React.Component<
   }
 
   componentDidUpdate(prevProps: Modal['props']) {
-    if (prevProps.open !== this.props.open && this.props.open) {
+    if (prevProps.children !== this.props.children && this.props.children) {
       setTimeout(() => {
         this.setState({
           transition: `bg-opacity-30 bg-black 
@@ -65,7 +64,7 @@ export class Modal extends React.Component<
   }
 
   render() {
-    if (!this.props.open) return <></>;
+    if (!this.props.children) return <></>;
 
     return ReactDOM.createPortal(
       <div

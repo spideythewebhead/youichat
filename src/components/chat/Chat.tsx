@@ -54,7 +54,7 @@ export function Chat({
           }
 
           if (response) {
-            data.value = response.Key;
+            data.value = response.Key.replace('chats/', '');
           }
         }
       }
@@ -382,20 +382,20 @@ class AudioMessage extends React.Component<
     this.getFile();
   }
 
-  getFile() {
+  async getFile() {
     const id = ++this._promiseId;
 
-    setTimeout(() => {
-      const pub = client.storage
-        .from('chats')
-        .getPublicUrl(this.props.path.replace('chats/', ''));
+    const { signedURL } = await client.storage
+      .from('chats')
+      .createSignedUrl(this.props.path, 3600);
 
-      if (pub.data?.publicURL) {
-        this.setState({
-          audioUrl: pub.data.publicURL,
-        });
-      }
-    }, 10);
+    if (id !== this._promiseId) return;
+
+    if (signedURL) {
+      this.setState({
+        audioUrl: signedURL,
+      });
+    }
   }
 
   render() {

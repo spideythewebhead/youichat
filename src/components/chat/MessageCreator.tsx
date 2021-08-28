@@ -131,7 +131,7 @@ class AudioRecord extends React.Component<
           <MicrophoneIcon className="h-6 w-6 p-1" />
         </IconButton>
 
-        <Modal dismissableOnClick={false} open={!!this.state.mediaRecorder}>
+        <Modal dismissableOnClick={false}>
           {this.state.mediaRecorder && (
             <Column
               crossAxis="items-center"

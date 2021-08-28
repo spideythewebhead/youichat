@@ -5,11 +5,12 @@ import App from './App';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { GlobalProvider } from './hooks/useAuth';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Router>
-      <GlobalProvider>{() => <App />}</GlobalProvider>
-    </Router>
-  </React.StrictMode>,
-  document.getElementById('root')
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+  // <React.StrictMode>
+  <Router>
+    <GlobalProvider>{() => <App />}</GlobalProvider>
+  </Router>
+  // </React.StrictMode>
 );
