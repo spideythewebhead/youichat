@@ -228,7 +228,7 @@ export function Message({
         crossAxis="items-start"
         className="hover:bg-primary bg-opacity-75 text-start rounded-md p-1 flex-grow"
       >
-        <Row className="gap-2" crossAxis="items-start">
+        <Row className="gap-2" crossAxis="items-end">
           <Avatar
             key={message.sender_id}
             size="md"
