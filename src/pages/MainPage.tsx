@@ -11,6 +11,8 @@ import { useFetchChat } from '../hooks/useFetchChat';
 import { useFetchUsers } from '../hooks/useFetchUsers';
 import { AppUser } from '../models/user';
 import MediaQuery from 'react-responsive';
+import { useCallsManager } from '../utils/calls_manager';
+import { CallWidget } from '../components/call/call_widget';
 
 export function MainPage() {
   const history = useHistory();
@@ -24,6 +26,8 @@ export function MainPage() {
     uid: profile.uid!,
     remoteUid: selectedUser?.id,
   });
+
+  const callsManager = useCallsManager();
 
   useEffect(() => {
     if (users && urlParams) {
@@ -114,6 +118,8 @@ export function MainPage() {
           />
         </Row>
       </MediaQuery>
+
+      <CallWidget />
     </>
   );
 }

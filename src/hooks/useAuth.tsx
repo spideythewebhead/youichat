@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { client } from '../db';
 import { ProfileNotifier } from '../models/profile';
+import { CallsManagerProvider } from '../utils/calls_manager';
 import { useUpdateState } from './useUpdateState';
 
 export interface LogState {
@@ -72,9 +73,11 @@ export function GlobalProvider({
 
   return (
     <ProfileNotifierContext.Provider value={profileNotifier}>
-      <LogStateContext.Provider value={authState}>
-        {children()}
-      </LogStateContext.Provider>
+      <CallsManagerProvider>
+        <LogStateContext.Provider value={authState}>
+          {children()}
+        </LogStateContext.Provider>
+      </CallsManagerProvider>
     </ProfileNotifierContext.Provider>
   );
 }

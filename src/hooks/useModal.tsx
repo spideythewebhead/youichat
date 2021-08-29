@@ -40,6 +40,7 @@ export class Modal extends React.Component<
   {
     dismissableOnClick?: boolean;
     onClick?: VoidFunction;
+    open: boolean;
   },
   { transition?: string }
 > {
@@ -78,7 +79,7 @@ export class Modal extends React.Component<
   }
 
   render() {
-    if (!this.props.children) return;
+    if (!this.props.open) return;
 
     return ReactDOM.createPortal(
       <div

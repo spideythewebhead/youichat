@@ -1,5 +1,7 @@
 import React from 'react';
+import { useMicrophonePermission } from '../../hooks/useRecordAudio';
 import { AppUser } from '../../models/user';
+import { useCallsManager } from '../../utils/calls_manager';
 import { Column, Row } from '../Flex';
 import { Hint } from '../Hint';
 import { UserWidgetDesktop, UserWidgetMobile } from './User';
@@ -60,6 +62,9 @@ export function UsersListDesktop({
   selectedUser: AppUser | null;
   onUserSelected: (user: AppUser | null) => void;
 }) {
+  const callsManager = useCallsManager();
+  const requestMicrophonePermission = useMicrophonePermission();
+
   const renderUsers = users.map((user) => {
     return (
       <UserWidgetDesktop
@@ -73,6 +78,11 @@ export function UsersListDesktop({
           }
 
           onUserSelected(user);
+        }}
+        onCallButtonClick={() => {
+          requestMicrophonePermission().then((stream) => {
+            callsManager?.call(user.id, stream);
+          });
         }}
       />
     );

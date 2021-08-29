@@ -1,6 +1,9 @@
 import React from 'react';
 import { AppUser } from '../../models/user';
 import { Avatar } from '../Avatar';
+import { Row } from '../Flex';
+import { IconButton } from '../IconButton';
+import { PhoneIcon } from '@heroicons/react/solid';
 
 export function UserWidgetMobile({
   user,
@@ -34,27 +37,36 @@ export function UserWidgetMobile({
 export function UserWidgetDesktop({
   user,
   onClick,
+  onCallButtonClick,
   active,
 }: {
   user: AppUser;
   onClick?: VoidFunction;
+  onCallButtonClick?: VoidFunction;
   active?: boolean;
 }) {
   return (
-    <button
-      className={`
-      px-2 py-1
-      rounded-md
-      text-left
-      filter
-      ${active ? 'bg-button' : ''}
-      ${active ? 'hover:brightness-110' : 'hover:bg-scaffold'}
-      flex flex-row gap-2 items-center
-      `}
-      onClick={onClick}
-    >
-      <Avatar imageUrl={user.image_url} />
-      {user.nickname}
-    </button>
+    <Row className="gap-1">
+      <button
+        className={`
+        flex-grow
+        px-2 py-1
+        rounded-md
+        text-left
+        filter
+        ${active ? 'bg-button' : ''}
+        ${active ? 'hover:brightness-110' : 'hover:bg-scaffold'}
+        flex flex-row gap-2 items-center
+        `}
+        onClick={onClick}
+      >
+        <Avatar imageUrl={user.image_url} />
+        {user.nickname}
+      </button>
+
+      <IconButton title="call" onClick={onCallButtonClick}>
+        <PhoneIcon className="h-6 w-6 p-1" />
+      </IconButton>
+    </Row>
   );
 }
