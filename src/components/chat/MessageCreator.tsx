@@ -137,45 +137,43 @@ class AudioRecord extends React.Component<
           <MicrophoneIcon className="h-6 w-6 p-1" />
         </IconButton>
 
-        <Modal dismissableOnClick={false}>
-          {this.state.mediaRecorder && (
-            <Column
-              crossAxis="items-center"
-              mainAxis="justify-center"
-              className="text-white"
-            >
-              <Card>
-                <CardTitle title="Recording audio..." />
-                <Row className="gap-1" mainAxis="justify-center">
-                  <TextButton
-                    onClick={() => {
-                      this._sendRecordRef = null;
-                      this.state.mediaRecorder?.stop();
-                      this.setState({
-                        mediaRecorder: null,
-                      });
-                    }}
-                  >
-                    Cancel
-                  </TextButton>
-                  <ElevatedButton
-                    onClick={() => {
-                      this._sendRecordRef = (body) =>
-                        this.props.onSendMessage(body);
+        <Modal open={!!this.state.mediaRecorder} dismissableOnClick={false}>
+          <Column
+            crossAxis="items-center"
+            mainAxis="justify-center"
+            className="text-white"
+          >
+            <Card>
+              <CardTitle title="Recording audio..." />
+              <Row className="gap-1" mainAxis="justify-center">
+                <TextButton
+                  onClick={() => {
+                    this._sendRecordRef = null;
+                    this.state.mediaRecorder?.stop();
+                    this.setState({
+                      mediaRecorder: null,
+                    });
+                  }}
+                >
+                  Cancel
+                </TextButton>
+                <ElevatedButton
+                  onClick={() => {
+                    this._sendRecordRef = (body) =>
+                      this.props.onSendMessage(body);
 
-                      this.setState({
-                        mediaRecorder: null,
-                      });
+                    this.setState({
+                      mediaRecorder: null,
+                    });
 
-                      this.state.mediaRecorder?.stop();
-                    }}
-                  >
-                    Send
-                  </ElevatedButton>
-                </Row>
-              </Card>
-            </Column>
-          )}
+                    this.state.mediaRecorder?.stop();
+                  }}
+                >
+                  Send
+                </ElevatedButton>
+              </Row>
+            </Card>
+          </Column>
         </Modal>
       </>
     );

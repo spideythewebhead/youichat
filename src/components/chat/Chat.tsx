@@ -432,16 +432,18 @@ function ImageMessage({ path }: { path: string }) {
           onClick={() => setOpenInModal(true)}
         />
       </Column>
-      <Modal dismissableOnClick={true} onClick={() => setOpenInModal(false)}>
-        {openInModal && (
-          <Column mainAxis="justify-center" className="py-8 px-8">
-            <img
-              key={download.data}
-              className="h-full max-h-96 oveflow-hidden rounded-md md:max-h-full"
-              src={download.data}
-            />
-          </Column>
-        )}
+      <Modal
+        open={openInModal}
+        dismissableOnClick={true}
+        onClick={() => setOpenInModal(false)}
+      >
+        <Column mainAxis="justify-center" className="py-8 px-8">
+          <img
+            key={download.data}
+            className="h-full max-h-96 oveflow-hidden rounded-md md:max-h-full"
+            src={download.data}
+          />
+        </Column>
       </Modal>
     </>
   );
