@@ -22,6 +22,7 @@ import { useMemo } from 'react';
 import { MessageCreator } from './MessageCreator';
 import { usePromise } from '../../hooks/usePromise';
 import { Modal } from '../../hooks/useModal';
+import { useCacheDb } from '../../utils/web_db';
 
 export function Chat({
   chat,
@@ -30,6 +31,7 @@ export function Chat({
   chat: AppChat;
   remoteUser: AppUser;
 }) {
+  const dbCache = useCacheDb();
   const profile = useProfileNotifier();
 
   const uid = profile.uid!;
@@ -48,9 +50,11 @@ export function Chat({
 
       if (data.type === 'audio') {
         if (data.value instanceof Blob) {
+          const blob = data.value;
+
           const { data: response, error } = await client.storage
             .from('chats')
-            .upload(`${chat.id}/${Date.now()}.mp3`, data.value, {
+            .upload(`${chat.id}/${Date.now()}.mp3`, blob, {
               upsert: true,
             });
 
@@ -59,13 +63,18 @@ export function Chat({
           }
 
           if (response) {
-            data.value = response.Key.replace('chats/', '');
+            const key = response.Key.replace('chats/', '');
+
+            dbCache?.put(key, blob);
+            data.value = key;
           }
         }
       }
 
       if (data.type === 'image') {
         if (data.value instanceof File) {
+          const file = data.value;
+
           if (data.value.size / 1024 / 1024 >= 5) {
             return;
           }
@@ -74,7 +83,7 @@ export function Chat({
 
           const { data: response, error } = await client.storage
             .from('chats')
-            .upload(`${chat.id}/${Date.now()}.${ext}`, data.value, {
+            .upload(`${chat.id}/${Date.now()}.${ext}`, file, {
               upsert: true,
             });
 
@@ -83,7 +92,10 @@ export function Chat({
           }
 
           if (response) {
-            data.value = response.Key.replace('chats/', '');
+            const key = response.Key.replace('chats/', '');
+
+            dbCache?.put(key, file);
+            data.value = key;
           }
         }
       }
@@ -94,7 +106,7 @@ export function Chat({
         body: data,
       });
     },
-    [chat.id, uid]
+    [chat.id, uid, dbCache]
   );
 
   return (
@@ -390,29 +402,21 @@ function EmojisReactions({
 }
 
 function AudioMessage({ path }: { path: string }) {
-  const downloadPromise = useMemo(() => {
-    return client.storage.from('chats').createSignedUrl(path, 3600);
-  }, [path]);
+  const download = useDownloadChatFile(path);
 
-  const { data } = usePromise(downloadPromise);
+  if (download.error) return <div>Failed..</div>;
+  if (!download.data) return <div>..</div>;
 
-  if (data?.error) return <div>Failed..</div>;
-  if (!data?.signedURL) return <div>Downloading..</div>;
-
-  return <audio src={data.signedURL} controls></audio>;
+  return <audio src={download.data} controls></audio>;
 }
 
 function ImageMessage({ path }: { path: string }) {
   const [openInModal, setOpenInModal] = useState(false);
 
-  const downloadPromise = useMemo(() => {
-    return client.storage.from('chats').createSignedUrl(path, 3600);
-  }, [path]);
+  const download = useDownloadChatFile(path);
 
-  const { data } = usePromise(downloadPromise);
-
-  if (data?.error) return <div>Failed..</div>;
-  if (!data?.signedURL) return <div>Downloading..</div>;
+  if (download.error) return <div>Failed..</div>;
+  if (!download.data) return <div>..</div>;
 
   return (
     <>
@@ -422,9 +426,9 @@ function ImageMessage({ path }: { path: string }) {
         className="min-w-12"
       >
         <img
-          key={data.signedURL}
-          className="max-h-80 w-full overflow-hidden rounded-md cursor-pointer"
-          src={data.signedURL}
+          key={download.data}
+          className="max-h-80 w-full overflow-hidden rounded-md cursor-pointer min-h-image"
+          src={download.data}
           onClick={() => setOpenInModal(true)}
         />
       </Column>
@@ -432,13 +436,68 @@ function ImageMessage({ path }: { path: string }) {
         {openInModal && (
           <Column mainAxis="justify-center" className="py-8 px-8">
             <img
-              key={data.signedURL}
+              key={download.data}
               className="h-full max-h-96 oveflow-hidden rounded-md md:max-h-full"
-              src={data.signedURL}
+              src={download.data}
             />
           </Column>
         )}
       </Modal>
     </>
   );
+}
+
+function useDownloadChatFile(id: string) {
+  const db = useCacheDb();
+  const [state, setState] = useState<{
+    data?: string;
+    error?: any;
+  }>({});
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      const result = await db?.get<{
+        id: string;
+        value: Blob;
+      }>(id);
+
+      if (result && result.data) {
+        if (mounted) {
+          setState({
+            data: window.URL.createObjectURL(result.data.value),
+          });
+        }
+
+        return;
+      }
+
+      const { data } = await client.storage.from('chats').download(id);
+
+      if (data) {
+        if (mounted) {
+          setState({
+            data: window.URL.createObjectURL(data),
+          });
+        }
+
+        await db?.put(id, data);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [id, db]);
+
+  useEffect(() => {
+    if (state.data) {
+      return () => {
+        window.URL.revokeObjectURL(state.data!);
+      };
+    }
+  }, [state.data]);
+
+  return state;
 }

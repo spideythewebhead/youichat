@@ -25,6 +25,7 @@ module.exports = {
       },
       minHeight: {
         'appbar': '48px',
+        'image': '8rem'
       },
       transitionDelay: {
         '2500': '2500ms'

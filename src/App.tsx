@@ -14,8 +14,10 @@ import { SetNicknamePage } from './pages/SetNicknamePage';
 import { MissingPublicData } from './models/profile';
 import { useFilePicker } from './hooks/useFilePicker';
 import { Avatar } from './components/Avatar';
+import { useCacheDb } from './utils/web_db';
 
 function App() {
+  const cacheDb = useCacheDb();
   const history = useHistory();
   const logState = useLogState();
   const profile = useProfileNotifier();
@@ -59,7 +61,15 @@ function App() {
           <div></div>
 
           {logState.session && (
-            <IconButton title="Logout" onClick={() => client.auth.signOut()}>
+            <IconButton
+              title="Logout"
+              onClick={async () => {
+                await Promise.allSettled([
+                  client.auth.signOut(),
+                  cacheDb?.clear(),
+                ]);
+              }}
+            >
               <LogoutIcon className="h-6 w-6 p-1" />
             </IconButton>
           )}
