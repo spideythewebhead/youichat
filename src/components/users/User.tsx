@@ -3,7 +3,7 @@ import { AppUser } from '../../models/user';
 import { Avatar } from '../Avatar';
 import { Row } from '../Flex';
 import { IconButton } from '../IconButton';
-import { PhoneIcon } from '@heroicons/react/solid';
+import { PhoneIcon, VideoCameraIcon } from '@heroicons/react/solid';
 
 export function UserWidgetMobile({
   user,
@@ -37,12 +37,14 @@ export function UserWidgetMobile({
 export function UserWidgetDesktop({
   user,
   onClick,
-  onCallButtonClick,
+  onAudioButtonClick,
+  onVideoButtonClick,
   active,
 }: {
   user: AppUser;
   onClick?: VoidFunction;
-  onCallButtonClick?: VoidFunction;
+  onAudioButtonClick?: VoidFunction;
+  onVideoButtonClick?: VoidFunction;
   active?: boolean;
 }) {
   return (
@@ -64,8 +66,12 @@ export function UserWidgetDesktop({
         {user.nickname}
       </button>
 
-      <IconButton title="call" onClick={onCallButtonClick}>
+      <IconButton title="audio call" onClick={onAudioButtonClick}>
         <PhoneIcon className="h-6 w-6 p-1" />
+      </IconButton>
+
+      <IconButton title="video call" onClick={onVideoButtonClick}>
+        <VideoCameraIcon className="h-6 w-6 p-1" />
       </IconButton>
     </Row>
   );

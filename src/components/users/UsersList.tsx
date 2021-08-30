@@ -1,5 +1,8 @@
 import React from 'react';
-import { useMicrophonePermission } from '../../hooks/useRecordAudio';
+import {
+  useCameraPermission,
+  useMicrophonePermission,
+} from '../../hooks/useRecordAudio';
 import { AppUser } from '../../models/user';
 import { useCallsManager } from '../../utils/calls_manager';
 import { Column, Row } from '../Flex';
@@ -64,6 +67,7 @@ export function UsersListDesktop({
 }) {
   const callsManager = useCallsManager();
   const requestMicrophonePermission = useMicrophonePermission();
+  const requestCameraPermission = useCameraPermission();
 
   const renderUsers = users.map((user) => {
     return (
@@ -79,8 +83,13 @@ export function UsersListDesktop({
 
           onUserSelected(user);
         }}
-        onCallButtonClick={() => {
+        onAudioButtonClick={() => {
           requestMicrophonePermission().then((stream) => {
+            callsManager?.call(user.id, stream);
+          });
+        }}
+        onVideoButtonClick={() => {
+          requestCameraPermission().then((stream) => {
             callsManager?.call(user.id, stream);
           });
         }}

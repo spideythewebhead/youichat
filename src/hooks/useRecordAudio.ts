@@ -10,3 +10,14 @@ export function useMicrophonePermission() {
 
   return requestPermission;
 }
+
+export function useCameraPermission() {
+  const requestPermission = useCallback(() => {
+    return (navigator.mediaDevices ?? navigator).getUserMedia({
+      audio: true,
+      video: true,
+    });
+  }, []);
+
+  return requestPermission;
+}

@@ -9,7 +9,7 @@ export interface CallEndedEvent {
 }
 
 export interface OutgoingCallEvent {
-  (call: Peer.MediaConnection): void;
+  (call: Peer.MediaConnection, localStream: MediaStream): void;
 }
 
 export interface IncomingCallEvent {
@@ -50,12 +50,17 @@ export class CallsManager {
 
   private _callbacksHolder = new CallbackHolder<ListenerEvents>();
 
-  addEventListener(
-    event: ListenerEvents,
-    cb: CallEndedEvent | IncomingCallEvent
-  ) {
+  addEventListener(event: 'call_ended', cb: CallEndedEvent): void;
+  addEventListener(event: 'outgoing_call', cb: OutgoingCallEvent): void;
+  addEventListener(event: 'incoming_call', cb: IncomingCallEvent): void;
+
+  addEventListener(event: ListenerEvents, cb: any) {
     this._callbacksHolder.add(event, cb);
   }
+
+  removeEventListener(event: 'call_ended', cb: CallEndedEvent): void;
+  removeEventListener(event: 'outgoing_call', cb: OutgoingCallEvent): void;
+  removeEventListener(event: 'incoming_call', cb: IncomingCallEvent): void;
 
   removeEventListener(
     event: ListenerEvents,
@@ -87,6 +92,12 @@ export class CallsManager {
         .get<IncomingCallEvent>('incoming_call')
         ?.forEach((fn) => fn(call));
 
+      const close = call.close;
+      call.close = () => {
+        this._removeCall(call);
+        close.apply(call);
+      };
+
       call.on('error', () => {
         this._removeCall(call);
       });
@@ -113,14 +124,26 @@ export class CallsManager {
     const completer = new Completer<MediaStream | null>();
 
     if (await this.pendingConnection) {
-      const call = this._connection?.call(`${id}`, stream);
+      const call = this._connection?.call(`${id}`, stream, {
+        metadata: {
+          type: stream.getVideoTracks().length > 0 ? 'video' : 'audio',
+        },
+      });
 
       if (call) {
         this._callbacksHolder
           .get<OutgoingCallEvent>('outgoing_call')
           ?.forEach((fn) => {
-            fn(call);
+            fn(call, stream);
           });
+
+        const close = call.close;
+
+        call.close = () => {
+          this._removeCall(call);
+          stream.getTracks().forEach((track) => track.stop());
+          close.apply(call);
+        };
 
         call.on('stream', (stream) => {
           completer.complete(stream);
