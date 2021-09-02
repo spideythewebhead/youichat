@@ -71,7 +71,7 @@ export function Chat({
         }
       }
 
-      if (data.type === 'image') {
+      if (data.type === 'image' || data.type === 'video') {
         if (data.value instanceof File) {
           const file = data.value;
 
@@ -224,6 +224,9 @@ export function Message({
       break;
     case 'image':
       messageWidget = <ImageMessage path={message.body.value as string} />;
+      break;
+    case 'video':
+      messageWidget = <VideoMessage path={message.body.value as string} />;
       break;
   }
 
@@ -445,6 +448,30 @@ function ImageMessage({ path }: { path: string }) {
           />
         </Column>
       </Modal>
+    </>
+  );
+}
+
+function VideoMessage({ path }: { path: string }) {
+  const download = useDownloadChatFile(path);
+
+  if (download.error) return <div>Failed..</div>;
+  if (!download.data) return <div>..</div>;
+
+  return (
+    <>
+      <Column
+        mainAxis="justify-center"
+        crossAxis="items-stretch"
+        className="min-w-12"
+      >
+        <video
+          key={download.data}
+          className="max-h-80 w-full overflow-hidden rounded-md cursor-pointer min-h-image"
+          src={download.data}
+          controls
+        />
+      </Column>
     </>
   );
 }

@@ -51,7 +51,7 @@ export function MessageCreator({
 
         <AudioRecord onSendMessage={onSendMessage} />
 
-        <ImagePicker onSendMessage={onSendMessage} />
+        <FilePicker onSendMessage={onSendMessage} />
 
         <IconButton
           disabled={!message}
@@ -180,7 +180,11 @@ class AudioRecord extends React.Component<
   }
 }
 
-function ImagePicker({
+function isVideo(file: File) {
+  return file.type.startsWith('video');
+}
+
+function FilePicker({
   onSendMessage,
 }: {
   onSendMessage: (body: AppMessage['body']) => void;
@@ -190,16 +194,16 @@ function ImagePicker({
   return (
     <IconButton
       onClick={async () => {
-        const file = await filePicker(/\.(png|jpe?g|webp|gif)$/);
+        const file = await filePicker(/\.(png|jpe?g|webp|gif|mp4)$/);
 
         if (file) {
           onSendMessage({
-            type: 'image',
+            type: isVideo(file) ? 'video' : 'image',
             value: file,
           });
         }
       }}
-      title="pick image"
+      title="pick file"
     >
       <PhotographIcon className="h-6 w-6 p-1" />
     </IconButton>

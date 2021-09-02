@@ -28,6 +28,10 @@ export interface DBMessage {
     | {
         type: 'image';
         value: string | File;
+      }
+    | {
+        type: 'video';
+        value: string | File;
       };
   created_at: string;
   reactions: DBReaction[];

@@ -1,12 +1,12 @@
 {
   "projects": {
-    "default": "ichat-6710a"
+    "default": "you-i-chat-7fdd7"
   },
   "targets": {
-    "ichat-6710a": {
+    "you-i-chat-7fdd7": {
       "hosting": {
         "main": [
-          "you-i-chat"
+          "youichat"
         ]
       }
     }
