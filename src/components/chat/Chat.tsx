@@ -215,7 +215,7 @@ export function Message({
     case 'text':
       messageWidget = (
         <div className=" text-base overflow-hidden break-all max-w-xs md:max-w-full whitespace-pre-line leading-5">
-          {message.body.value}
+          <TextMessage text={message.body.value} />
         </div>
       );
       break;
@@ -333,6 +333,55 @@ export function Message({
   );
 }
 
+function TextMessage({ text }: { text: string }) {
+  const hasLink = useMemo(() => {
+    return /(https?|([\d\w]*\.\w{2,}))/.test(text);
+  }, [text]);
+
+  return useMemo(() => {
+    if (hasLink) {
+      const s = text.replaceAll(
+        /((https?:\/\/)?([\d\w]*\.\w{2,})+)/gim,
+        '<a>$1</a>'
+      );
+
+      const parts = [];
+
+      let nextSubStartPosition = 0;
+
+      for (let i = 0; i < s.length; ++i) {
+        if (s[i] === '<' && s[1 + i] === 'a') {
+          const closingAt = s.indexOf('</a>', i);
+
+          parts.push(s.substring(nextSubStartPosition, i));
+          nextSubStartPosition = closingAt + 4;
+
+          const url = s.substring(3 + i, closingAt);
+
+          parts.push(
+            <a
+              className="text-blue-400 filter hover:brightness-110 hover:underline "
+              href={url.startsWith('http') ? url : `https://${url}`}
+            >
+              {url}
+            </a>
+          );
+
+          i = closingAt - 1;
+        }
+      }
+
+      if (nextSubStartPosition !== s.length) {
+        parts.push(s.substr(nextSubStartPosition));
+      }
+
+      return <>{parts}</>;
+    }
+
+    return <>{text}</>;
+  }, [hasLink, text]);
+}
+
 function EmojisReactions({
   parent,
   onClose,
@@ -353,18 +402,18 @@ function EmojisReactions({
   }, []);
 
   const position = useMemo(() => {
-    const _position = {
-      left: 0,
-      top: rect.top + rect.height + 4.0,
-    };
+    const y = rect.top + rect.height + 4.0;
+    let x = 0;
 
     if (rect.left + size.width >= document.body.clientWidth) {
-      _position.left = document.body.clientWidth - 8 - size.width;
+      x = document.body.clientWidth - 8 - size.width;
     } else {
-      _position.left = rect.left - size.width / 2 + rect.width / 2;
+      x = rect.left - size.width / 2 + rect.width / 2;
     }
 
-    return _position;
+    return {
+      transform: `translate3d(${x}px, ${y}px, 0)`,
+    };
   }, [size, rect]);
 
   useEffect(() => {
@@ -382,7 +431,7 @@ function EmojisReactions({
   return ReactDOM.createPortal(
     <div
       ref={ref}
-      className="absolute p-1 rounded-md bg-secondary filter drop-shadow-md z-20"
+      className="absolute p-1 rounded-md bg-secondary filter drop-shadow-md z-20 top-0 left-0"
       style={position}
     >
       <Row axisSize="min">
