@@ -108,6 +108,7 @@ export function UsersListDesktop({
       bg-primary
       overflow-y-auto
       min-w-users-list
+      
       `}
         crossAxis="items-stretch"
       >
