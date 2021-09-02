@@ -231,7 +231,7 @@ function VideoCall({
           <div className="relative max-h-96">
             <div className="overflow-hidden h-full rounded-md">
               <video
-                className="object-contain"
+                className="object-fill h-full"
                 ref={videoRefCb}
                 autoPlay
                 // playsInline
