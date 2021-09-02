@@ -96,7 +96,7 @@ export function MainPage() {
 
       <MediaQuery minWidth={600}>
         <Row crossAxis="items-stretch" className="h-full overflow-y-hidden">
-          <div className="flex-grow py-2 ">
+          <div className="flex-grow py-2 pl-2">
             {!selectedUser && (
               <div className="text-center font-bold">
                 Select someone to talk!
@@ -106,9 +106,7 @@ export function MainPage() {
               <Column mainAxis="justify-center">Loading chat..</Column>
             )}
             {chat && selectedUser && (
-              <div className="max-w-screen-lg mx-auto h-full w-full border p-2 rounded-md border-card shadow-md">
-                <Chat key={chat.id} chat={chat} remoteUser={selectedUser!} />
-              </div>
+              <Chat key={chat.id} chat={chat} remoteUser={selectedUser!} />
             )}
           </div>
 
