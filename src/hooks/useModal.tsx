@@ -59,19 +59,19 @@ export class Modal extends React.Component<
       this.setState({
         transition: `bg-opacity-30`,
       });
-    }, 5);
+    }, 1);
   }
 
   componentDidMount() {
-    if (this.props.children) {
+    if (this.props.open) {
       this.animIn();
     }
   }
 
   componentDidUpdate(prevProps: Modal['props']) {
-    if (prevProps.children !== this.props.children && this.props.children) {
+    if (!prevProps.open && this.props.open) {
       this.animIn();
-    } else if (!this.props.children && prevProps.children) {
+    } else if (prevProps.open && !this.props.open) {
       this.setState({
         transition: 'bg-opacity-0',
       });
@@ -84,7 +84,7 @@ export class Modal extends React.Component<
     return ReactDOM.createPortal(
       <div
         ref={this.ref}
-        className={`absolute bg-black h-full w-full inset-0 z-50 pointer-events-auto transition delay-100 duration-500 ${this.state.transition}`}
+        className={`absolute bg-black h-full w-full inset-0 z-50 pointer-events-auto transition delay-50 duration-500 ${this.state.transition}`}
         onClick={() => {
           if (this.props.dismissableOnClick) {
             this.props.onClick?.();
