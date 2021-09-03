@@ -341,7 +341,7 @@ function TextMessage({ text }: { text: string }) {
   return useMemo(() => {
     if (hasLink) {
       const s = text.replaceAll(
-        /((https?:\/\/)?([\d\w]*\.\w{2,})+)/gim,
+        /((https?:\/\/)?(([\d\w_-]*\.[\d\w_-]*){1,}|localhost)(:\d{0,5})?[\d\w@_?=/#%&.-]*)/gim,
         '<a>$1</a>'
       );
 
