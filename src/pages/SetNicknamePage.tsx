@@ -40,7 +40,7 @@ export function SetNicknamePage() {
       }
 
       if (data) {
-        profile.updatePublicData(new PublicData(data[0].nickname));
+        profile.updatePublicData(new PublicData(data[0]));
         history.replace('/');
       }
     },
