@@ -279,7 +279,7 @@ export function Message({
       </Column>
 
       <IconButton
-        onClick={(e) => {
+        onMouseUp={(e) => {
           e.stopPropagation();
 
           if (emojiParent) {
@@ -430,24 +430,29 @@ function EmojisReactions({
 
   return ReactDOM.createPortal(
     <div
-      ref={ref}
-      className="absolute p-1 rounded-md bg-secondary filter drop-shadow-md z-20 top-0 left-0"
-      style={position}
+      className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-20 overflow-hidden"
+      onClick={() => onClose()}
     >
-      <Row axisSize="min">
-        {emojis.map((emoji, index) => (
-          <button
-            key={emoji}
-            className="hover:bg-black hover:bg-opacity-20 rounded-md p-2"
-            onMouseUp={(e) => {
-              onClose(emojiName[index]);
-            }}
-            title={emojiName[index]}
-          >
-            <div className="text-sm text-center pr-1">{emoji}</div>
-          </button>
-        ))}
-      </Row>
+      <div
+        ref={ref}
+        className="absolute p-1 rounded-md bg-secondary filter drop-shadow-md z-20 top-0 left-0 max-w-max"
+        style={position}
+      >
+        <Row axisSize="min">
+          {emojis.map((emoji, index) => (
+            <button
+              key={emoji}
+              className="hover:bg-black hover:bg-opacity-20 rounded-md p-2"
+              onMouseUp={(e) => {
+                onClose(emojiName[index]);
+              }}
+              title={emojiName[index]}
+            >
+              <div className="text-sm text-center">{emoji}</div>
+            </button>
+          ))}
+        </Row>
+      </div>
     </div>,
     document.body
   );
