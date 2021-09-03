@@ -20,7 +20,6 @@ import { EmojiHappyIcon } from '@heroicons/react/outline';
 import ReactDOM from 'react-dom';
 import { useMemo } from 'react';
 import { MessageCreator } from './MessageCreator';
-import { usePromise } from '../../hooks/usePromise';
 import { Modal } from '../../hooks/useModal';
 import { useCacheDb } from '../../utils/web_db';
 
@@ -497,7 +496,7 @@ function ImageMessage({ path }: { path: string }) {
         <Column mainAxis="justify-center" className="py-8 px-8">
           <img
             key={download.data}
-            className="h-full max-h-96 oveflow-hidden rounded-md md:max-h-full"
+            className="oveflow-hidden rounded-md"
             src={download.data}
           />
         </Column>
