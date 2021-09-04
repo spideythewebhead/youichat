@@ -13,6 +13,8 @@ import { AppUser } from '../models/user';
 import MediaQuery from 'react-responsive';
 import { useCallsManager } from '../utils/calls_manager';
 import { CallWidget } from '../components/call/call_widget';
+import { messaging } from '../firebase';
+import { client } from '../db';
 
 export function MainPage() {
   const history = useHistory();
@@ -26,8 +28,6 @@ export function MainPage() {
     uid: profile.uid!,
     remoteUid: selectedUser?.id,
   });
-
-  const callsManager = useCallsManager();
 
   useEffect(() => {
     if (users && urlParams) {
@@ -60,6 +60,43 @@ export function MainPage() {
       });
     };
   }, [selectedUser?.id, history]);
+
+  useEffect(() => {
+    const id = setTimeout(async () => {
+      try {
+        const token = await messaging.getToken();
+        console.log(token);
+
+        await client.from('push_tokens').insert({
+          user_id: profile.uid,
+          token,
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    }, 1000);
+
+    const onMessageFromServiceWorker = (event: MessageEvent) => {
+      if (event.data.type === 'focus-chat') {
+        setSelectedUser(
+          users.find((user) => user.id === event.data.senderId) ?? null
+        );
+      }
+    };
+
+    window.navigator.serviceWorker.addEventListener(
+      'message',
+      onMessageFromServiceWorker
+    );
+
+    return () => {
+      clearTimeout(id);
+      window.navigator.serviceWorker.removeEventListener(
+        'message',
+        onMessageFromServiceWorker
+      );
+    };
+  }, [profile.uid, users]);
 
   return (
     <>

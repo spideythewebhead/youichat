@@ -30,7 +30,7 @@ export function Chat({
   chat: AppChat;
   remoteUser: AppUser;
 }) {
-  const dbCache = useCacheDb();
+  const cacheDb = useCacheDb();
   const profile = useProfileNotifier();
 
   const uid = profile.uid!;
@@ -64,7 +64,7 @@ export function Chat({
           if (response) {
             const key = response.Key.replace('chats/', '');
 
-            dbCache?.put(key, blob);
+            cacheDb?.put(key, blob);
             data.value = key;
           }
         }
@@ -93,7 +93,7 @@ export function Chat({
           if (response) {
             const key = response.Key.replace('chats/', '');
 
-            dbCache?.put(key, file);
+            cacheDb?.put(key, file);
             data.value = key;
           }
         }
@@ -105,7 +105,7 @@ export function Chat({
         body: data,
       });
     },
-    [chat.id, uid, dbCache]
+    [chat.id, uid, cacheDb]
   );
 
   return (
