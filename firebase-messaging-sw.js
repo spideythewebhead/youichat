@@ -44,6 +44,10 @@ self.addEventListener('notificationclick', (event) => {
             type: 'focus-chat',
             senderId: data.senderId,
           });
+        } else {
+          self.clients.openWindow(
+            `https://youichat.web.app/?chat-remote=${data.senderId}`
+          );
         }
       })
   );
