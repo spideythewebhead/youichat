@@ -64,9 +64,12 @@ function App() {
             <IconButton
               title="Logout"
               onClick={async () => {
+                const pushId = window.localStorage.getItem('push_id');
                 await Promise.allSettled([
-                  client.auth.signOut(),
                   cacheDb?.clear(),
+                  pushId &&
+                    client.from('push_tokens').delete().eq('id', pushId),
+                  client.auth.signOut(),
                 ]);
               }}
             >
@@ -92,7 +95,7 @@ function App() {
           exact
           path="/"
           render={() => {
-            if (!logState.session || logState.state === 'SIGNED_OUT') {
+            if (!logState.session && logState.state === 'SIGNED_OUT') {
               history.replace('/login');
               return;
             }

@@ -62,40 +62,47 @@ export function MainPage() {
   }, [selectedUser?.id, history]);
 
   useEffect(() => {
-    const id = setTimeout(async () => {
-      try {
-        const token = await messaging.getToken();
-        console.log(token);
+    if (profile.uid && users) {
+      const id = setTimeout(async () => {
+        try {
+          const token = await messaging.getToken();
 
-        await client.from('push_tokens').insert({
-          user_id: profile.uid,
-          token,
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    }, 1000);
+          const { data } = await client
+            .from<{ id: number; user_id: string; token: string }>('push_tokens')
+            .insert({
+              user_id: profile.uid!,
+              token,
+            });
 
-    const onMessageFromServiceWorker = (event: MessageEvent) => {
-      if (event.data.type === 'focus-chat') {
-        setSelectedUser(
-          users.find((user) => user.id === event.data.senderId) ?? null
-        );
-      }
-    };
+          if (data) {
+            window.localStorage.setItem('push_id', data[0].id.toString());
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }, 1000);
 
-    window.navigator.serviceWorker.addEventListener(
-      'message',
-      onMessageFromServiceWorker
-    );
+      const onMessageFromServiceWorker = (event: MessageEvent) => {
+        if (event.data.type === 'focus-chat') {
+          setSelectedUser(
+            users.find((user) => user.id === event.data.senderId) ?? null
+          );
+        }
+      };
 
-    return () => {
-      clearTimeout(id);
-      window.navigator.serviceWorker.removeEventListener(
+      window.navigator.serviceWorker.addEventListener(
         'message',
         onMessageFromServiceWorker
       );
-    };
+
+      return () => {
+        clearTimeout(id);
+        window.navigator.serviceWorker.removeEventListener(
+          'message',
+          onMessageFromServiceWorker
+        );
+      };
+    }
   }, [profile.uid, users]);
 
   return (

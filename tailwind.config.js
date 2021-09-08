@@ -1,4 +1,4 @@
-const colors = require('tailwindcss/colors')
+const colors = require('tailwindcss/colors');
 
 module.exports = {
   mode: 'jit',
@@ -7,36 +7,36 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'scaffold': '#2e2e2e',
-        'primary': '#3b3b3b',
-        'card': '#404040',
-        'button': '#07c700',
-        'secondary': colors.purple[700]
+        scaffold: '#2e2e2e',
+        primary: '#3b3b3b',
+        card: '#404040',
+        button: '#07c700',
+        secondary: colors.purple[700],
       },
       minWidth: {
-        'card': '350px',
+        card: '350px',
         'users-list': '250px',
-        'user-mobile': '56px',
-        '12': '3rem',
-
+        'user-mobile': '72px',
+        12: '3rem',
       },
       maxWidth: {
-        'screen': '100vw',
+        screen: '100vw',
+        'user-mobile': '72px',
       },
       minHeight: {
-        'appbar': '48px',
-        'image': '8rem'
+        appbar: '48px',
+        image: '8rem',
       },
       transitionDelay: {
-        '2500': '2500ms'
-      }
+        2500: '2500ms',
+      },
     },
   },
   variants: {
     extend: {
-      brightness: ['hover', 'focus']
+      brightness: ['hover', 'focus'],
     },
   },
   plugins: [],
-  important: true
-}
+  important: true,
+};

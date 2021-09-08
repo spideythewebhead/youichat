@@ -17,11 +17,12 @@ export function UserWidgetMobile({
   return (
     <button
       className={`
-      px-2 py-1
+      py-1
       rounded-md
       text-left text-sm text-gray-50
       filter
       min-w-user-mobile
+      max-w-user-mobile
       ${active ? 'bg-button' : ''}
       ${active ? 'hover:brightness-110' : 'hover:bg-scaffold'}
       flex flex-col gap-1 items-center
@@ -29,7 +30,9 @@ export function UserWidgetMobile({
       onClick={onClick}
     >
       <Avatar size="md" imageUrl={user.image_url} />
-      {user.nickname}
+      <div className="px-2 text-center whitespace-nowrap overflow-ellipsis overflow-hidden max-w-full">
+        {user.nickname}
+      </div>
     </button>
   );
 }
@@ -58,12 +61,14 @@ export function UserWidgetDesktop({
         filter
         ${active ? 'bg-button' : ''}
         ${active ? 'hover:brightness-110' : 'hover:bg-scaffold'}
-        flex flex-row gap-2 items-center
+        flex flex-row gap-2 items-start
         `}
         onClick={onClick}
       >
         <Avatar imageUrl={user.image_url} />
-        {user.nickname}
+        <div className="text-center whitespace-nowrap overflow-ellipsis overflow-hidden max-w-full">
+          {user.nickname}
+        </div>
       </button>
 
       <IconButton title="audio call" onClick={onAudioButtonClick}>

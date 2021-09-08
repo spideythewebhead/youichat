@@ -74,6 +74,7 @@ messaging.onBackgroundMessage((payload) => {
     const notificationOptions = {
       body: body,
       tag: data.senderId,
+      icon: '/assets/default-avatar.jpeg',
       data: {
         type: data.type,
         senderId: data.senderId,
