@@ -22,6 +22,7 @@ import { useMemo } from 'react';
 import { MessageCreator } from './MessageCreator';
 import { Modal } from '../../hooks/useModal';
 import { useCacheDb } from '../../utils/web_db';
+import { emojiMatchReplace, emojiRegExp } from './emojified';
 
 export function Chat({
   chat,
@@ -333,13 +334,17 @@ export function Message({
 }
 
 function TextMessage({ text }: { text: string }) {
-  const hasLink = useMemo(() => {
-    return /(https?|([\d\w]*\.\w{2,}))/.test(text);
+  const emojified = useMemo(() => {
+    return text.replaceAll(emojiRegExp, emojiMatchReplace);
   }, [text]);
+
+  const hasLink = useMemo(() => {
+    return /(https?|([\d\w]*\.\w{2,}))/.test(emojified);
+  }, [emojified]);
 
   return useMemo(() => {
     if (hasLink) {
-      const s = text.replaceAll(
+      const s = emojified.replaceAll(
         /((https?:\/\/)?(([\d\w_-]*\.[\d\w_-]*){1,}|localhost)(:\d{0,5})?[\d\w@_?=/#%&.-]*)/gim,
         '<a>$1</a>'
       );
@@ -377,8 +382,8 @@ function TextMessage({ text }: { text: string }) {
       return <>{parts}</>;
     }
 
-    return <>{text}</>;
-  }, [hasLink, text]);
+    return <>{emojified}</>;
+  }, [hasLink, emojified]);
 }
 
 function EmojisReactions({
