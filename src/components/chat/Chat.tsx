@@ -150,7 +150,7 @@ export function ChatList({
     (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
       if (
         event.currentTarget.scrollHeight -
-          (-event.currentTarget.scrollTop + event.currentTarget.offsetHeight) <
+        (-event.currentTarget.scrollTop + event.currentTarget.offsetHeight) <
         300
       ) {
         onLoadMore();
@@ -263,10 +263,9 @@ export function Message({
                     <span
                       key={`${emoji}_${message.id}`}
                       className={`text-gray-50 text-xs text-start px-2 py-1 rounded-full
-                        ${
-                          message.hasReactionFromUser(profile.uid!, emoji)
-                            ? 'border-purple-400 bg-secondary bg-opacity-75'
-                            : 'border-purple-400 border'
+                        ${message.hasReactionFromUser(profile.uid!, emoji)
+                          ? 'border-purple-400 bg-secondary bg-opacity-75'
+                          : 'border-purple-400 border'
                         }`}
                     >
                       {message.reactions[emoji].length} • {emojis[i]}
@@ -366,6 +365,7 @@ function TextMessage({ text }: { text: string }) {
             <a
               className="text-blue-400 filter hover:brightness-110 hover:underline "
               href={url.startsWith('http') ? url : `https://${url}`}
+              target="_blank"
             >
               {url}
             </a>
