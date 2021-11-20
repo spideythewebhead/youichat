@@ -6,14 +6,14 @@ import { Card, CardTitle } from '../components/Card';
 import { Column } from '../components/Flex';
 import { InputField } from '../components/InputField';
 import { client } from '../db';
-import { useLogState, useProfileNotifier } from '../hooks/useAuth';
+import { useAuthState, useProfileNotifier } from '../hooks/useAuth';
 import { PublicData } from '../models/profile';
 import { AppUser } from '../models/user';
 
 export function SetNicknamePage() {
   const history = useHistory();
 
-  const logState = useLogState();
+  const logState = useAuthState();
 
   const profile = useProfileNotifier();
 

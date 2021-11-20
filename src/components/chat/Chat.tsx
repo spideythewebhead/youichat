@@ -23,6 +23,8 @@ import { MessageCreator } from './MessageCreator';
 import { Modal } from '../../hooks/useModal';
 import { useCacheDb } from '../../utils/web_db';
 import { emojiMatchReplace, emojiRegExp } from './emojified';
+import { useMessageReceived } from '../../hooks/useMessageReceived';
+import { useHasWindowFocus } from '../../hooks/useDocumentFocus';
 
 export function Chat({
   chat,
@@ -33,8 +35,16 @@ export function Chat({
 }) {
   const cacheDb = useCacheDb();
   const profile = useProfileNotifier();
+  const messageReceivedSideEffect = useMessageReceived();
+  const hasWindowsFocus = useHasWindowFocus();
 
   const uid = profile.uid!;
+
+  useEffect(() => {
+    if (hasWindowsFocus) {
+      messageReceivedSideEffect.remove(remoteUser.id);
+    }
+  }, [messageReceivedSideEffect, remoteUser.id, hasWindowsFocus]);
 
   const onSendMessage = useCallback(
     async (body: AppMessage['body']) => {
@@ -150,7 +160,7 @@ export function ChatList({
     (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
       if (
         event.currentTarget.scrollHeight -
-        (-event.currentTarget.scrollTop + event.currentTarget.offsetHeight) <
+          (-event.currentTarget.scrollTop + event.currentTarget.offsetHeight) <
         300
       ) {
         onLoadMore();
@@ -263,9 +273,10 @@ export function Message({
                     <span
                       key={`${emoji}_${message.id}`}
                       className={`text-gray-50 text-xs text-start px-2 py-1 rounded-full
-                        ${message.hasReactionFromUser(profile.uid!, emoji)
-                          ? 'border-purple-400 bg-secondary bg-opacity-75'
-                          : 'border-purple-400 border'
+                        ${
+                          message.hasReactionFromUser(profile.uid!, emoji)
+                            ? 'border-purple-400 bg-secondary bg-opacity-75'
+                            : 'border-purple-400 border'
                         }`}
                     >
                       {message.reactions[emoji].length} • {emojis[i]}
@@ -363,8 +374,10 @@ function TextMessage({ text }: { text: string }) {
 
           parts.push(
             <a
+              key={url}
               className="text-blue-400 filter hover:brightness-110 hover:underline "
               href={url.startsWith('http') ? url : `https://${url}`}
+              rel="noreferrer"
               target="_blank"
             >
               {url}

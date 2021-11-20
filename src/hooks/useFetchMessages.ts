@@ -1,24 +1,15 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { client } from '../db';
+import { AppChat } from '../models/chat';
 import { AppMessage, DBMessage, DBReaction } from '../models/message';
 import { ValueNotifier } from '../utils/value_notifier';
 import { useUpdateState } from './useUpdateState';
 
-class NotificationPlayer {
-  private _player: HTMLAudioElement;
-
-  constructor(public readonly sound: string) {
-    this._player = new Audio(sound);
-  }
-
-  play() {
-    this._player.play();
-  }
+interface NewMessageListener {
+  (message: AppMessage): void;
 }
 
-const messageNotificationPlayer = new NotificationPlayer('/assets/message.mp3');
-
-class Fetcher extends ValueNotifier<AppMessage[]> {
+class MessagesFetcher extends ValueNotifier<AppMessage[]> {
   constructor(
     public uid: string,
     public discussionId: number,
@@ -44,6 +35,8 @@ class Fetcher extends ValueNotifier<AppMessage[]> {
 
   private _disposables: VoidFunction[] = [];
 
+  private _onNewMessageListeners: NewMessageListener[] = [];
+
   dispose() {
     for (const disposable of this._disposables) {
       disposable();
@@ -57,11 +50,11 @@ class Fetcher extends ValueNotifier<AppMessage[]> {
       .on('INSERT', (payload) => {
         const message = new AppMessage(payload.new);
 
-        if (this.hasListeners && this.uid !== message.sender_id) {
-          messageNotificationPlayer.play();
-        }
-
         this.value = [message, ...this.value!];
+
+        for (const listener of this._onNewMessageListeners) {
+          listener(message);
+        }
       })
       .subscribe();
 
@@ -132,9 +125,31 @@ class Fetcher extends ValueNotifier<AppMessage[]> {
 
     this._loading = false;
   }
+
+  addNewMessageReceivedListener(listener: NewMessageListener) {
+    this._onNewMessageListeners.push(listener);
+  }
+
+  removeNewMessageReceivedListener(listener: NewMessageListener) {
+    this._onNewMessageListeners = this._onNewMessageListeners.filter(
+      (fn) => fn !== listener
+    );
+  }
 }
 
-const cache: Record<string, Fetcher> = {};
+const cache: Record<string, MessagesFetcher> = {};
+
+export function createOrGetMessagesFetcher(uid: string, discussionId: number) {
+  if (cache[discussionId]) {
+    return cache[discussionId];
+  }
+
+  const fetcher = new MessagesFetcher(uid, discussionId, 25);
+
+  cache[discussionId] = fetcher;
+
+  return fetcher;
+}
 
 export function useFetchMessages({
   uid,
@@ -147,16 +162,9 @@ export function useFetchMessages({
 
   // this hook crashes on dev mode
   // because its called twice and adds the same listener twice
-  const fetcher = useMemo<Fetcher>(() => {
-    if (cache[discussionId]) {
-      cache[discussionId].addListener(updateState);
-      return cache[discussionId];
-    }
-
-    const fetcher = new Fetcher(uid, discussionId, 25);
+  const fetcher = useMemo<MessagesFetcher>(() => {
+    const fetcher = createOrGetMessagesFetcher(uid, discussionId);
     fetcher.addListener(updateState);
-
-    cache[discussionId] = fetcher;
 
     return fetcher;
   }, [uid, discussionId, updateState]);
@@ -172,4 +180,43 @@ export function useFetchMessages({
     loading: fetcher.loading,
     onLoadMore: () => fetcher.onFetchMore(),
   };
+}
+
+export function useMyDiscussions(uid: string) {
+  const [state, setState] = useState<number[]>([]);
+
+  useEffect(() => {
+    const subscription = client
+      .from<AppChat>(`discussions:participants=cs.${uid}`)
+      .on('*', (payload) => {
+        console.log(payload);
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [uid]);
+
+  useEffect(() => {
+    let active = true;
+
+    client
+      .from<AppChat>('discussions')
+      .select('*')
+      .contains('participants', [uid])
+      .then((response) => {
+        if (active) {
+          const chats = (response.body ?? []).map((chat) => chat.id);
+
+          setState(chats);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [uid]);
+
+  return state;
 }
