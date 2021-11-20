@@ -7,6 +7,7 @@ import React, { useCallback, useState } from 'react';
 import { useFilePicker } from '../../hooks/useFilePicker';
 import { Modal } from '../../hooks/useModal';
 import { AppMessage } from '../../models/message';
+import { chatAllowedFilesTypesRegExp, isVideo } from '../../utils/file_utils';
 import { ElevatedButton, TextButton } from '../Button';
 import { Card, CardTitle } from '../Card';
 import { Column, Row } from '../Flex';
@@ -180,10 +181,6 @@ class AudioRecord extends React.Component<
   }
 }
 
-function isVideo(file: File) {
-  return file.type.startsWith('video');
-}
-
 function FilePicker({
   onSendMessage,
 }: {
@@ -194,7 +191,7 @@ function FilePicker({
   return (
     <IconButton
       onClick={async () => {
-        const file = await filePicker(/\.(png|jpe?g|webp|gif|mp4)$/);
+        const file = await filePicker(chatAllowedFilesTypesRegExp);
 
         if (file) {
           onSendMessage({
