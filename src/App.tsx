@@ -9,7 +9,7 @@ import { SignUpPage } from './pages/SignUpPage';
 import { IconButton } from './components/IconButton';
 import { LogoutIcon } from '@heroicons/react/solid';
 import { client } from './db';
-import { MainPage } from './pages/MainPage';
+import { MainPage } from './pages/main_page/MainPage';
 import { SetNicknamePage } from './pages/SetNicknamePage';
 import { MissingPublicData } from './models/profile';
 import { useFilePicker } from './hooks/useFilePicker';
