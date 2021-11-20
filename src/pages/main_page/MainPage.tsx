@@ -8,6 +8,7 @@ import {
 import MediaQuery from 'react-responsive';
 import { CallWidget } from '../../components/call/call_widget';
 import { useMainPageBloc } from './useMainPageBloc';
+import { Droppable } from '../../components/Droppable';
 
 export function MainPage() {
   const state = useMainPageBloc();

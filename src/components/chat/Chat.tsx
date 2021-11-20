@@ -25,6 +25,8 @@ import { useCacheDb } from '../../utils/web_db';
 import { emojiMatchReplace, emojiRegExp } from './emojified';
 import { useMessageReceived } from '../../hooks/useMessageReceived';
 import { useHasWindowFocus } from '../../hooks/useDocumentFocus';
+import { Droppable } from '../Droppable';
+import { chatAllowedFilesTypesRegExp, isVideo } from '../../utils/file_utils';
 
 export function Chat({
   chat,
@@ -120,13 +122,23 @@ export function Chat({
   );
 
   return (
-    <Column crossAxis="items-stretch" mainAxis="justify-start">
-      <div className="overflow-hidden flex-grow">
-        <ChatList chat={chat} remoteUser={remoteUser} />
-      </div>
-
-      <MessageCreator onSendMessage={onSendMessage} />
-    </Column>
+    <Droppable
+      onFileReceived={(file) => {
+        if (chatAllowedFilesTypesRegExp.test(file.name)) {
+          onSendMessage({
+            type: isVideo(file) ? 'video' : 'image',
+            value: file,
+          });
+        }
+      }}
+    >
+      <Column crossAxis="items-stretch" mainAxis="justify-start">
+        <div className="overflow-hidden flex-grow">
+          <ChatList chat={chat} remoteUser={remoteUser} />
+        </div>
+        <MessageCreator onSendMessage={onSendMessage} />
+      </Column>
+    </Droppable>
   );
 }
 
