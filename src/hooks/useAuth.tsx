@@ -11,13 +11,13 @@ import { ProfileNotifier } from '../models/profile';
 import { CallsManagerProvider } from '../utils/calls_manager';
 import { useUpdateState } from './useUpdateState';
 
-export interface LogState {
+export interface AuthState {
   state: AuthChangeEvent;
   session: Session | null;
 }
 
 export function useAuth() {
-  const [state, setState] = useState<LogState>(() => {
+  const [state, setState] = useState<AuthState>(() => {
     const session = client.auth.session();
 
     return {
@@ -44,7 +44,7 @@ export function useAuth() {
   return state;
 }
 
-const LogStateContext = createContext<LogState | null>(null);
+const AuthContext = createContext<AuthState | null>(null);
 const ProfileNotifierContext = createContext<ProfileNotifier | null>(null);
 
 export function GlobalProvider({
@@ -74,16 +74,16 @@ export function GlobalProvider({
   return (
     <ProfileNotifierContext.Provider value={profileNotifier}>
       <CallsManagerProvider>
-        <LogStateContext.Provider value={authState}>
+        <AuthContext.Provider value={authState}>
           {children()}
-        </LogStateContext.Provider>
+        </AuthContext.Provider>
       </CallsManagerProvider>
     </ProfileNotifierContext.Provider>
   );
 }
 
-export function useLogState() {
-  return useContext(LogStateContext)!;
+export function useAuthState() {
+  return useContext(AuthContext)!;
 }
 
 export function useProfileNotifier() {

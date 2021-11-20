@@ -6,20 +6,28 @@ import {
   UsersListDesktop,
   UsersListMobile,
 } from '../components/users/UsersList';
-import { useProfileNotifier } from '../hooks/useAuth';
+import { useAuth, useProfileNotifier } from '../hooks/useAuth';
 import { useFetchChat } from '../hooks/useFetchChat';
 import { useFetchUsers } from '../hooks/useFetchUsers';
 import { AppUser } from '../models/user';
 import MediaQuery from 'react-responsive';
-import { useCallsManager } from '../utils/calls_manager';
 import { CallWidget } from '../components/call/call_widget';
 import { messaging } from '../firebase';
 import { client } from '../db';
+import {
+  createOrGetMessagesFetcher,
+  useMyDiscussions,
+} from '../hooks/useFetchMessages';
+import { useMessageReceived } from '../hooks/useMessageReceived';
+import { AppMessage } from '../models/message';
 
 export function MainPage() {
   const history = useHistory();
   const { search: urlParams } = useLocation();
   const profile = useProfileNotifier();
+  const messageReceivedSideEffect = useMessageReceived();
+
+  const myDiscussions = useMyDiscussions(profile.uid!);
 
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const { users } = useFetchUsers(profile.uid!);
@@ -104,6 +112,42 @@ export function MainPage() {
       };
     }
   }, [profile.uid, users]);
+
+  useEffect(() => {
+    function onNewMessage(message: AppMessage) {
+      if (
+        message.sender_id !== profile.uid &&
+        (!document.hasFocus() || selectedUser?.id !== message.sender_id)
+      ) {
+        messageReceivedSideEffect.notify(
+          message.sender_id,
+          users.find((user) => user.id === message.sender_id)?.nickname ?? ''
+        );
+      }
+    }
+
+    for (const id of myDiscussions) {
+      createOrGetMessagesFetcher(
+        profile.uid!,
+        id
+      ).addNewMessageReceivedListener(onNewMessage);
+    }
+
+    return () => {
+      for (const id of myDiscussions) {
+        createOrGetMessagesFetcher(
+          profile.uid!,
+          id
+        ).removeNewMessageReceivedListener(onNewMessage);
+      }
+    };
+  }, [
+    messageReceivedSideEffect,
+    myDiscussions,
+    profile.uid,
+    selectedUser?.id,
+    users,
+  ]);
 
   return (
     <>
