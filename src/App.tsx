@@ -2,7 +2,7 @@ import React from 'react';
 import { AppBar } from './components/AppBar';
 import { ElevatedButton, TextButton } from './components/Button';
 import { Column, Row } from './components/Flex';
-import { useAuthState, useProfileNotifier } from './hooks/useAuth';
+import { useAuth, useProfile } from './hooks/useAuth';
 import { Switch, Route, useHistory, Redirect } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
@@ -11,17 +11,17 @@ import { LogoutIcon } from '@heroicons/react/solid';
 import { client } from './db';
 import { MainPage } from './pages/main_page/MainPage';
 import { SetNicknamePage } from './pages/SetNicknamePage';
-import { MissingPublicData } from './models/profile';
 import { useFilePicker } from './hooks/useFilePicker';
 import { Avatar } from './components/Avatar';
 import { useCacheDb } from './utils/web_db';
 import { MessageReceivedProvider } from './hooks/useMessageReceived';
+import { ProfileCompletionState } from './models/profile';
 
 function App() {
   const cacheDb = useCacheDb();
   const history = useHistory();
-  const logState = useAuthState();
-  const profile = useProfileNotifier();
+  const authState = useAuth();
+  const profile = useProfile();
 
   const filePicker = useFilePicker();
 
@@ -34,22 +34,18 @@ function App() {
             crossAxis="items-center"
             className="h-full gap-1"
           >
-            {profile.publicData && (
+            {profile.user && (
               <Row className="gap-2">
                 <div>
                   <span>Welcome </span>
                   <span className="hover:underline cursor-default">
-                    {profile.publicData?.user?.nickname}
+                    {profile.user.nickname}
                   </span>
                 </div>
 
                 <Avatar
-                  imageUrl={profile.publicData?.user?.image_url}
+                  imageUrl={profile.user.image_url}
                   onClick={async () => {
-                    const id = profile.publicData?.user?.id;
-
-                    if (!id) return;
-
                     const file = await filePicker(/\.(png|jpe?g)$/);
 
                     if (file) {
@@ -62,24 +58,28 @@ function App() {
 
             <div></div>
 
-            {logState.session && (
+            {profile.user && (
               <IconButton
                 title="Logout"
                 onClick={async () => {
                   const pushId = window.localStorage.getItem('push_id');
+
                   await Promise.allSettled([
                     cacheDb?.clear(),
                     pushId &&
                       client.from('push_tokens').delete().eq('id', pushId),
-                    client.auth.signOut(),
                   ]);
+
+                  await client.auth.signOut();
+
+                  history.replace('/login');
                 }}
               >
                 <LogoutIcon className="h-6 w-6 p-1" />
               </IconButton>
             )}
 
-            {!logState.session && (
+            {!authState.session && (
               <div>
                 <ElevatedButton onClick={() => history.push('/login')}>
                   Log In
@@ -97,30 +97,36 @@ function App() {
             exact
             path="/"
             render={() => {
-              if (!logState.session || logState.state === 'SIGNED_OUT') {
-                history.replace('/login');
-                return;
+              if (!authState.session || authState.state === 'SIGNED_OUT') {
+                return <Redirect to="/login" />;
               }
 
-              if (profile.publicData instanceof MissingPublicData) {
+              if (
+                profile.profileCompletionState ===
+                ProfileCompletionState.pendingCompletion
+              ) {
                 return <Redirect to="/complete-nickname" />;
               }
 
-              if (!profile.publicData) {
-                return <></>;
+              if (!profile.user) {
+                return (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    Fetching your data..
+                  </div>
+                );
               }
 
               return <MainPage />;
             }}
           />
-          {logState.session && (
+
+          {authState.session && (
             <Route path="/complete-nickname" component={SetNicknamePage} />
           )}
-          {!logState.session && (
-            <>
-              <Route path="/login" component={LoginPage} />
-              <Route path="/signup" component={SignUpPage} />
-            </>
+
+          {!authState.session && <Route path="/login" component={LoginPage} />}
+          {!authState.session && (
+            <Route path="/signup" component={SignUpPage} />
           )}
 
           <Redirect to="/" />

@@ -6,16 +6,13 @@ import { Card, CardTitle } from '../components/Card';
 import { Column } from '../components/Flex';
 import { InputField } from '../components/InputField';
 import { client } from '../db';
-import { useAuthState, useProfileNotifier } from '../hooks/useAuth';
-import { PublicData } from '../models/profile';
+import { useAuth, useProfile } from '../hooks/useAuth';
 import { AppUser } from '../models/user';
 
 export function SetNicknamePage() {
   const history = useHistory();
-
-  const logState = useAuthState();
-
-  const profile = useProfileNotifier();
+  const logState = useAuth();
+  const profile = useProfile();
 
   const { control, handleSubmit, formState } = useForm();
 
@@ -40,7 +37,7 @@ export function SetNicknamePage() {
       }
 
       if (data) {
-        profile.updatePublicData(new PublicData(data[0]));
+        profile.updateUser(data[0]);
         history.replace('/');
       }
     },
@@ -60,6 +57,7 @@ export function SetNicknamePage() {
               rules={{
                 required: 'required',
                 minLength: 3,
+                maxLength: 25,
                 pattern: {
                   value: /[\d\w]+/i,
                   message: '',

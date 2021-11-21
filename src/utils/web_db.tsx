@@ -122,7 +122,7 @@ const CacheDbContext = React.createContext<CacheDb | null>(null);
 export function CacheDbProvider({
   children,
 }: {
-  children: React.ReactElement;
+  children: React.ReactElement | React.ReactElement[];
 }) {
   const [db, setDb] = useState<CacheDb | null>(null);
 

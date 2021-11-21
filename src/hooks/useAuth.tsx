@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 import { client } from '../db';
-import { ProfileNotifier } from '../models/profile';
+import { Profile } from '../models/profile';
 import { CallsManagerProvider } from '../utils/calls_manager';
 import { useUpdateState } from './useUpdateState';
 
@@ -16,7 +16,7 @@ export interface AuthState {
   session: Session | null;
 }
 
-export function useAuth() {
+function _useAuth() {
   const [state, setState] = useState<AuthState>(() => {
     const session = client.auth.session();
 
@@ -45,47 +45,56 @@ export function useAuth() {
 }
 
 const AuthContext = createContext<AuthState | null>(null);
-const ProfileNotifierContext = createContext<ProfileNotifier | null>(null);
+const ProfileContext = createContext<Profile | null>(null);
 
-export function GlobalProvider({
+export function AuthProvider({
+  children,
+}: {
+  children: React.ReactElement | React.ReactElement[];
+}) {
+  const auth = _useAuth();
+
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
+export function ProfileProvider({
   children,
 }: {
   children: () => React.ReactElement | React.ReactElement[];
 }) {
   const updateState = useUpdateState();
-  const authState = useAuth();
-
-  const profileNotifier = useMemo(() => new ProfileNotifier(), []);
+  const auth = _useAuth();
+  const profile = useMemo(() => new Profile(), []);
 
   useEffect(() => {
-    profileNotifier.addListener(updateState);
+    profile.addListener(updateState);
 
     return () => {
-      profileNotifier.dispose();
+      profile.dispose();
     };
-  }, [profileNotifier, updateState]);
+  }, [profile, updateState]);
 
   useEffect(() => {
-    if (authState.session?.user?.id) {
-      profileNotifier.uid = authState.session?.user?.id;
+    if (auth.session?.user?.id) {
+      profile.uid = auth.session.user.id;
     }
-  }, [authState.session?.user?.id, profileNotifier]);
+
+    return () => {
+      profile.uid = null;
+    };
+  }, [auth.session?.user?.id, profile]);
 
   return (
-    <ProfileNotifierContext.Provider value={profileNotifier}>
-      <CallsManagerProvider>
-        <AuthContext.Provider value={authState}>
-          {children()}
-        </AuthContext.Provider>
-      </CallsManagerProvider>
-    </ProfileNotifierContext.Provider>
+    <ProfileContext.Provider value={profile}>
+      {children()}
+    </ProfileContext.Provider>
   );
 }
 
-export function useAuthState() {
+export function useAuth() {
   return useContext(AuthContext)!;
 }
 
-export function useProfileNotifier() {
-  return useContext(ProfileNotifierContext)!;
+export function useProfile() {
+  return useContext(ProfileContext)!;
 }

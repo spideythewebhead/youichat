@@ -5,23 +5,8 @@ export interface Listenable {
   dispose: VoidFunction;
 }
 
-export class ValueNotifier<T> implements Listenable {
-  constructor(value: T | null) {
-    this._value = value;
-  }
-
+export class ChangeNotifier implements Listenable {
   private listeners: VoidFunction[] = [];
-
-  private _value: T | null = null;
-  get value(): T | null {
-    return this._value;
-  }
-  set value(v: T | null) {
-    // if (this._value !== v) {
-    this._value = v;
-    this.notifyListeners();
-    // }
-  }
 
   addListener(listener: VoidFunction) {
     this.listeners.push(listener);
@@ -43,5 +28,22 @@ export class ValueNotifier<T> implements Listenable {
     for (const listener of this.listeners) {
       listener();
     }
+  }
+}
+
+export class ValueNotifier<T> extends ChangeNotifier {
+  constructor(value: T) {
+    super();
+    this._value = value;
+  }
+
+  private _value: T;
+  get value(): T {
+    return this._value;
+  }
+
+  set value(v: T) {
+    this._value = v;
+    this.notifyListeners();
   }
 }

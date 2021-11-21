@@ -3,7 +3,7 @@ import { client } from '../db';
 import { AppUser } from '../models/user';
 import { useMounted } from './useMounted';
 
-export function useFetchUsers(uid?: string) {
+export function useFetchUsers(uid: string) {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [error, setError] = useState<any>(null);
 

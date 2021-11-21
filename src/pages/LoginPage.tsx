@@ -8,7 +8,6 @@ import { useHistory } from 'react-router-dom';
 import { client } from '../db';
 
 export function LoginPage() {
-  const history = useHistory();
   const { handleSubmit, formState, control } = useForm({ mode: 'onChange' });
 
   const onSubmit = useCallback(
@@ -19,10 +18,8 @@ export function LoginPage() {
         console.log('something went wrong', error);
         return;
       }
-
-      history.replace('/');
     },
-    [history]
+    []
   );
 
   return (

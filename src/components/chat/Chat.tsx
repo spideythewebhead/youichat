@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { client } from '../../db';
-import { useProfileNotifier } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useAuth';
 import { useFetchMessages } from '../../hooks/useFetchMessages';
 import { AppChat } from '../../models/chat';
 import { AppUser } from '../../models/user';
@@ -14,7 +14,7 @@ import { Column, Row } from '../Flex';
 import { IconButton } from '../IconButton';
 import { Avatar } from '../Avatar';
 import { AppMessage, DBReaction, EmojiType } from '../../models/message';
-import { ProfileNotifier } from '../../models/profile';
+import { Profile } from '../../models/profile';
 import { emojis, emojiName } from '../../models/emojis';
 import { EmojiHappyIcon } from '@heroicons/react/outline';
 import ReactDOM from 'react-dom';
@@ -36,7 +36,7 @@ export function Chat({
   remoteUser: AppUser;
 }) {
   const cacheDb = useCacheDb();
-  const profile = useProfileNotifier();
+  const profile = useProfile();
   const messageReceivedSideEffect = useMessageReceived();
   const hasWindowsFocus = useHasWindowFocus();
 
@@ -150,7 +150,7 @@ export function ChatList({
   remoteUser: AppUser;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
-  const profile = useProfileNotifier();
+  const profile = useProfile();
 
   const {
     loading: loadingMessages,
@@ -185,7 +185,7 @@ export function ChatList({
     (id: string) => {
       if (id === remoteUser.id) return remoteUser.nickname;
 
-      return profile.publicData?.user?.nickname ?? null;
+      return profile.user!.nickname ?? null;
     },
     [remoteUser, profile]
   );
@@ -194,7 +194,7 @@ export function ChatList({
     (id: string) => {
       if (id === remoteUser.id) return remoteUser.image_url;
 
-      return profile.publicData?.user?.image_url ?? null;
+      return profile.user!.image_url ?? null;
     },
     [remoteUser, profile]
   );
@@ -225,7 +225,7 @@ export function Message({
   getAvatar,
 }: {
   message: AppMessage;
-  profile: ProfileNotifier;
+  profile: Profile;
   getUserNickname: (uid: string) => string | null;
   getAvatar: (uid: string) => string | null;
 }) {

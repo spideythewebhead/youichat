@@ -1,22 +1,28 @@
 import { client } from '../db';
-import { ValueNotifier } from '../utils/value_notifier';
+import { ChangeNotifier } from '../utils/value_notifier';
 import { AppUser } from './user';
 
-export class PublicData {
-  constructor(public readonly user?: AppUser) {}
+export const enum ProfileCompletionState {
+  waiting,
+  completed,
+  pendingCompletion,
 }
 
-export class MissingPublicData extends PublicData {}
-
-export class ProfileNotifier extends ValueNotifier<void> {
+export class Profile extends ChangeNotifier {
   constructor() {
-    super(null);
+    super();
+  }
+
+  private _profileNeedsCompletion = ProfileCompletionState.waiting;
+  get profileCompletionState() {
+    return this._profileNeedsCompletion;
   }
 
   private _uid: string | null = null;
   get uid() {
     return this._uid;
   }
+
   set uid(id: string | null) {
     this._uid = id;
 
@@ -25,11 +31,11 @@ export class ProfileNotifier extends ValueNotifier<void> {
       return;
     }
 
-    this.updatePublicData(null);
+    this.updateUser(null);
   }
 
-  private _fetchProfile() {
-    client
+  private async _fetchProfile() {
+    await client
       .from<AppUser>('users')
       .select('id,nickname,image_url')
       .eq('id', this._uid)
@@ -39,21 +45,23 @@ export class ProfileNotifier extends ValueNotifier<void> {
         }
 
         if (response.data.length === 0) {
-          this.updatePublicData(new MissingPublicData());
+          this._profileNeedsCompletion =
+            ProfileCompletionState.pendingCompletion;
           return;
         }
 
-        this.updatePublicData(new PublicData(response.data[0]));
+        this._profileNeedsCompletion = ProfileCompletionState.completed;
+        this.updateUser(response.data[0]);
       });
   }
 
-  private _publicData: PublicData | null = null;
-  get publicData() {
-    return this._publicData;
+  private _user: AppUser | null = null;
+  get user() {
+    return this._user;
   }
 
-  updatePublicData(data: PublicData | null) {
-    this._publicData = data;
+  updateUser(user: AppUser | null) {
+    this._user = user;
     this.notifyListeners();
   }
 
@@ -76,7 +84,7 @@ export class ProfileNotifier extends ValueNotifier<void> {
         .eq('id', this._uid);
 
       if (update && update.length > 0) {
-        this.updatePublicData(new PublicData(update[0]));
+        this.updateUser(update[0]);
         return true;
       }
     }

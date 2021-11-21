@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { client } from '../../db';
 import { messaging } from '../../firebase';
-import { useProfileNotifier } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useAuth';
 import { useFetchChat } from '../../hooks/useFetchChat';
 import {
   useMyDiscussions,
@@ -13,12 +13,12 @@ import { useMessageReceived } from '../../hooks/useMessageReceived';
 import { ValueChanged } from '../../interfaces/value_changed';
 import { AppChat } from '../../models/chat';
 import { AppMessage } from '../../models/message';
-import { ProfileNotifier } from '../../models/profile';
+import { Profile } from '../../models/profile';
 import { AppUser } from '../../models/user';
 
 interface MainPageBloc {
   users: AppUser[];
-  profile: ProfileNotifier;
+  profile: Profile;
   user: {
     remote: AppUser | null;
     setRemote: ValueChanged<AppUser | null>;
@@ -31,7 +31,7 @@ interface MainPageBloc {
 
 export function useMainPageBloc(): MainPageBloc {
   const { search: urlParams } = useLocation();
-  const profile = useProfileNotifier();
+  const profile = useProfile();
 
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const { users } = useFetchUsers(profile.uid!);
@@ -181,7 +181,7 @@ function _useNewMessagesSideEffect({
   users,
   selectedUser,
 }: {
-  profile: ProfileNotifier;
+  profile: Profile;
   users: AppUser[];
   selectedUser: AppUser | null;
 }) {

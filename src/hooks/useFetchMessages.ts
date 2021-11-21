@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { client } from '../db';
 import { AppChat } from '../models/chat';
 import { AppMessage, DBMessage, DBReaction } from '../models/message';
-import { ValueNotifier } from '../utils/value_notifier';
+import { ChangeNotifier, ValueNotifier } from '../utils/value_notifier';
 import { useUpdateState } from './useUpdateState';
 
 interface NewMessageListener {

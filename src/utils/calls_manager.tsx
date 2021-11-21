@@ -1,7 +1,6 @@
 import Peer from 'peerjs';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useProfileNotifier } from '../hooks/useAuth';
-import { usePromise } from '../hooks/usePromise';
+import React, { useContext, useEffect, useMemo } from 'react';
+import { useProfile } from '../hooks/useAuth';
 import { Completer } from './completer';
 
 export interface CallEndedEvent {
@@ -184,9 +183,9 @@ export function useCallsManager() {
 export function CallsManagerProvider({
   children,
 }: {
-  children: React.ReactElement;
+  children: React.ReactElement | React.ReactElement[];
 }) {
-  const profile = useProfileNotifier();
+  const profile = useProfile();
   const manager = useMemo(() => new CallsManager(), []);
 
   useEffect(() => {
